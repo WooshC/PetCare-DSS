@@ -1,0 +1,96 @@
+@PetCare.Cuidador_HostAddress = http://localhost:5044
+@ContentType = application/json
+@authToken = {{login.response.body.token}}
+
+### Login para obtener token (usar Auth Service)
+# POST http://localhost:5001/api/auth/login
+# Content-Type: {{ContentType}}
+# 
+# {
+#   "email": "cuidador@ejemplo.com",
+#   "password": "Password123!"
+# }
+
+### Probar que el servicio funciona
+GET {{PetCare.Cuidador_HostAddress}}/api/cuidador/test
+Accept: application/json
+
+###
+
+### Obtener todos los cuidadores
+GET {{PetCare.Cuidador_HostAddress}}/api/cuidador
+Authorization: Bearer {{authToken}}
+
+###
+
+### Obtener cuidador específico
+GET {{PetCare.Cuidador_HostAddress}}/api/cuidador/1
+Authorization: Bearer {{authToken}}
+
+###
+
+### Obtener mi perfil de cuidador
+GET {{PetCare.Cuidador_HostAddress}}/api/cuidador/mi-perfil
+Authorization: Bearer {{authToken}}
+
+###
+
+### Crear perfil de cuidador
+POST {{PetCare.Cuidador_HostAddress}}/api/cuidador
+Content-Type: {{ContentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "documentoIdentidad": "12345678",
+  "telefonoEmergencia": "3001234567",
+  "biografia": "Soy un cuidador profesional con 5 años de experiencia cuidando mascotas.",
+  "experiencia": "He trabajado con perros, gatos, aves y reptiles. Especializado en perros grandes.",
+  "horarioAtencion": "Lunes a Viernes 8:00 AM - 6:00 PM, Sábados 9:00 AM - 2:00 PM",
+  "tarifaPorHora": 25.50
+}
+
+###
+
+### Actualizar mi perfil de cuidador
+PUT {{PetCare.Cuidador_HostAddress}}/api/cuidador/mi-perfil
+Content-Type: {{ContentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "documentoIdentidad": "12345678",
+  "telefonoEmergencia": "3001234567",
+  "biografia": "Soy un cuidador profesional con 6 años de experiencia cuidando mascotas. Me encanta trabajar con animales.",
+  "experiencia": "He trabajado con perros, gatos, aves y reptiles. Especializado en perros grandes y gatos.",
+  "horarioAtencion": "Lunes a Viernes 8:00 AM - 6:00 PM, Sábados 9:00 AM - 3:00 PM",
+  "tarifaPorHora": 28.00
+}
+
+###
+
+### Actualizar cuidador específico (requiere rol Admin)
+PUT {{PetCare.Cuidador_HostAddress}}/api/cuidador/1
+Content-Type: {{ContentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "documentoIdentidad": "87654321",
+  "telefonoEmergencia": "3007654321",
+  "biografia": "Cuidador actualizado por administrador",
+  "experiencia": "Experiencia actualizada",
+  "horarioAtencion": "Horario actualizado",
+  "tarifaPorHora": 30.00
+}
+
+###
+
+### Verificar documento de cuidador (requiere rol Admin)
+POST {{PetCare.Cuidador_HostAddress}}/api/cuidador/1/verificar
+Authorization: Bearer {{authToken}}
+
+###
+
+### Eliminar cuidador (requiere rol Admin)
+DELETE {{PetCare.Cuidador_HostAddress}}/api/cuidador/1
+Authorization: Bearer {{authToken}}
+
+###
