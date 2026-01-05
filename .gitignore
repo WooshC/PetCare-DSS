@@ -1,0 +1,20 @@
+# Ignorar todas las carpetas bin y obj
+**/bin/
+**/obj/
+
+# Archivos de configuración local
+**/appsettings.Local.json
+**/appsettings.Production.json
+
+
+.vs/
+*.user
+*.suo
+*.userosscache
+*.csproj.user
+*.vbproj.user
+*.jsproj.user
+*.vscode/
+*.vspscc
+*.vssscc
+*.sln.docstates
