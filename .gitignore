@@ -1,6 +1,6 @@
 # Build Results
-bin/
-obj/
+**/bin/
+**/obj/
 *.dll
 *.exe
 *.so
@@ -14,6 +14,12 @@ obj/
 *.suo
 *.sln.docstates
 *.sln.vs/
+*.userosscache
+*.csproj.user
+*.vbproj.user
+*.jsproj.user
+*.vspscc
+*.vssscc
 
 # Rider
 .idea/
@@ -22,6 +28,7 @@ obj/
 # Local user-specific files
 appsettings.Development.json
 appsettings.Local.json
+appsettings.Production.json
 
 # Logs
 logs/
