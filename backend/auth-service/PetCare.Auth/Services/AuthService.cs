@@ -26,9 +26,20 @@ namespace PetCareServicios.Services
 
         /// <summary>
         /// Registra un nuevo usuario con soporte para multi-tenancy
+        /// IMPORTANTE: Solo permite roles Cliente y Cuidador. Para crear Admins, usar AdminService.
         /// </summary>
         public async Task<AuthResponse> RegisterAsync(RegisterRequest solicitud)
         {
+            // SEGURIDAD: Validar que no se intenta crear un Admin desde el endpoint público
+            if (solicitud.Rol.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return new AuthResponse
+                {
+                    Success = false,
+                    Message = "No autorizado. Para registrar un Admin, contacte al administrador del sistema."
+                };
+            }
+
             // Validar que el correo no esté registrado en el mismo arrendador
             var usuarioExistente = await _gestorUsuarios.Users
                 .FirstOrDefaultAsync(u => u.Email == solicitud.Correo && 

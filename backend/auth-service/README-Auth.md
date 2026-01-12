@@ -1,13 +1,15 @@
 # PetCare - Auth Service 🔐
 
-Microservicio de autenticación para PetCare con JWT e Identity
+Microservicio de autenticación para PetCare con JWT, Identity y búsqueda de usuarios
 
 ## Estructura del Proyecto 🏗️
 
 ```
 PetCare.Auth/
 ├── Controllers/
-│   └── AuthController.cs          # Endpoints de autenticación ✅
+│   ├── AuthController.cs          # Endpoints de autenticación ✅
+│   ├── AdminController.cs         # Admin y bootstrap ✅
+│   └── UsuariosController.cs      # NUEVO: Búsqueda de usuarios
 ├── Data/
 │   └── AuthDbContext.cs           # Contexto de BD con Identity ✅
 ├── Migrations/
@@ -18,35 +20,74 @@ PetCare.Auth/
 │       ├── AuthResponse.cs        # Respuesta de autenticación ✅
 │       ├── LoginRequest.cs        # DTO para login ✅
 │       ├── RegisterRequest.cs     # DTO para registro ✅
+│       ├── AdminRegisterRequest.cs # NUEVO: DTO para crear Admins ✅
+│       ├── BootstrapAdminRequest.cs # NUEVO: DTO para bootstrap ✅
 │       ├── PasswordReset*.cs      # DTOs para reset de contraseña ✅
 │       ├── User.cs                # Entidad Usuario extendida ✅
 │       ├── UserInfo.cs            # DTO para información de usuario ✅
-│       └── UserRole.cs            # Roles personalizados ✅
+│       ├── UserRole.cs            # Roles personalizados ✅
+│       ├── CuidadorPublicProfile.cs # NUEVO: Perfil público de cuidador
+│       ├── ClientePublicProfile.cs # NUEVO: Perfil público de cliente
+│       └── ReviewRequest.cs       # NUEVO: DTO para reseñas
 ├── Services/
-│   └── AuthService.cs             # Lógica de autenticación ✅
+│   ├── AuthService.cs             # Lógica de autenticación ✅
+│   ├── AdminService.cs            # Admin y bootstrap ✅
+│   └── SearchService.cs           # NUEVO: Búsqueda de usuarios
 ├── Program.cs                     # Configuración principal ✅
 ├── appsettings.json               # Configuración local ✅
 ├── appsettings.Docker.json        # Configuración Docker ✅
 ├── PetCare.Auth.csproj            # Archivo de proyecto ✅
 ├── PetCare.Auth.http              # Colección de requests ✅
+├── QUICK_TEST.http                # NUEVO: Tests rápidos
 └── Dockerfile                     # Configuración Docker ✅
 ```
 
 ## Endpoints principales 🌐
 
-| Método | Endpoint           | Descripción                           | Status |
-|--------|--------------------|---------------------------------------|--------|
-| POST   | /api/auth/register | Registro de nuevos usuarios (Cliente/Cuidador) | ✅ |
-| POST   | /api/auth/login    | Inicio de sesión (obtener JWT)        | ✅ |
-| POST   | /api/auth/reset-password | Solicitar reset de contraseña    | ✅ |
-| POST   | /api/auth/confirm-reset | Confirmar reset de contraseña    | ✅ |
-| POST   | /api/auth/change-password | Cambio directo de contraseña     | ✅ |
-| GET    | /api/auth/users    | Lista de usuarios (desarrollo)       | ✅ |
-| GET    | /api/auth/users/{id} | Usuario específico (desarrollo)    | ✅ |
-| GET    | /api/auth/me       | Usuario actual (requiere JWT)        | ✅ |
-| GET    | /api/auth/test     | Endpoint de prueba                    | ✅ |
+### Autenticación (Públicos)
 
-## Configuración ⚙️
+| Método | Endpoint           | Descripción                           | Rol |
+|--------|--------------------|---------------------------------------|-----|
+| POST   | /api/auth/register | Registro de nuevos usuarios (Cliente/Cuidador) | Público |
+| POST   | /api/auth/login    | Inicio de sesión (obtener JWT)        | Público |
+| POST   | /api/auth/reset-password | Solicitar reset de contraseña    | Público |
+| POST   | /api/auth/confirm-reset | Confirmar reset de contraseña    | Público |
+| POST   | /api/auth/change-password | Cambio directo de contraseña     | Autenticado |
+| GET    | /api/auth/users    | Lista de usuarios (desarrollo)       | Público |
+| GET    | /api/auth/users/{id} | Usuario específico (desarrollo)    | Público |
+| GET    | /api/auth/me       | Usuario actual (requiere JWT)        | Autenticado |
+| GET    | /api/auth/test     | Endpoint de prueba                    | Público |
+
+### Bootstrap (Público - Solo primer admin)
+
+| Método | Endpoint           | Descripción                           | Rol |
+|--------|--------------------|---------------------------------------|-----|
+| POST   | /api/admin/bootstrap | Crear PRIMER admin del tenant      | Público (una sola vez) |
+
+### Administración (Protegido)
+
+| Método | Endpoint           | Descripción                           | Rol |
+|--------|--------------------|---------------------------------------|-----|
+| POST   | /api/admin/register | Crear nuevos Admins (requiere JWT)    | Admin |
+| POST   | /api/admin/users | Crear Clientes/Cuidadores/Admins    | Admin |
+| GET    | /api/admin/users | Listar usuarios del tenant          | Admin |
+| GET    | /api/admin/users/{id} | Detalles de un usuario            | Admin |
+
+### Búsqueda (Públicos / Mixtos)
+
+| Método | Endpoint           | Descripción                           | Rol |
+|--------|--------------------|---------------------------------------|-----|
+| GET    | /api/usuarios/cuidadores/buscar | Buscar cuidadores por ciudad/especialidades | Público |
+| GET    | /api/usuarios/cuidadores/{id} | Ver perfil completo de cuidador | Público |
+| GET    | /api/usuarios/clientes/buscar | Buscar clientes por ciudad        | Cuidador |
+| GET    | /api/usuarios/clientes/{id} | Ver perfil completo de cliente   | Cuidador |
+
+### Reseñas (Protegido)
+
+| Método | Endpoint           | Descripción                           | Rol |
+|--------|--------------------|---------------------------------------|-----|
+| POST   | /api/reviews | Crear reseña de cuidador            | Autenticado |
+| GET    | /api/reviews/cuidador/{id} | Ver todas las reseñas de un cuidador | Público |
 
 ### Desarrollo Local (`appsettings.json`):
 ```json

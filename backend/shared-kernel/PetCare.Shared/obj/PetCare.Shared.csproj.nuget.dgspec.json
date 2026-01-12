@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\DETPC\\Documents\\GITHUB\\bingo-online\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj": {}
+    "C:\\Users\\DETPC\\Documents\\GITHUB\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj": {}
   },
   "projects": {
-    "C:\\Users\\DETPC\\Documents\\GITHUB\\bingo-online\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj": {
+    "C:\\Users\\DETPC\\Documents\\GITHUB\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\DETPC\\Documents\\GITHUB\\bingo-online\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj",
+        "projectUniqueName": "C:\\Users\\DETPC\\Documents\\GITHUB\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj",
         "projectName": "PetCare.Shared",
-        "projectPath": "C:\\Users\\DETPC\\Documents\\GITHUB\\bingo-online\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj",
+        "projectPath": "C:\\Users\\DETPC\\Documents\\GITHUB\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\PetCare.Shared.csproj",
         "packagesPath": "C:\\Users\\DETPC\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\DETPC\\Documents\\GITHUB\\bingo-online\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\obj\\",
+        "outputPath": "C:\\Users\\DETPC\\Documents\\GITHUB\\PetCare-DSS\\backend\\shared-kernel\\PetCare.Shared\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

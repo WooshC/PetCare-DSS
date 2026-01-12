@@ -102,6 +102,7 @@ builder.Services.AddDbContext<PetCare.Shared.Data.AuditDbContext>(options =>
 
 // Registrar servicios
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<PetCare.Shared.IAuditService, PetCare.Shared.AuditService>();
 
 var app = builder.Build();
@@ -204,6 +205,35 @@ using (var scope = app.Services.CreateScope())
         catch (Exception ex)
         {
             Console.WriteLine($"❌ Error al crear roles: {ex.Message}");
+        }
+
+        // Crear tenants por defecto si no existen
+        try
+        {
+            Console.WriteLine("🏢 Creando tenants por defecto...");
+            var userManager = services.GetRequiredService<UserManager<User>>();
+            
+            var tenants = new[] { "petcare-admin", "petcare-cliente", "petcare-cuidador" };
+            
+            foreach (var tenant in tenants)
+            {
+                // Verificar si ya existe al menos un usuario en el tenant
+                var usuarioEnTenant = await userManager.Users
+                    .FirstOrDefaultAsync(u => u.IdentificadorArrendador == tenant);
+                
+                if (usuarioEnTenant == null)
+                {
+                    Console.WriteLine($"✅ Tenant '{tenant}' está listo para bootstrap (ejecuta: POST /api/admin/bootstrap)");
+                }
+                else
+                {
+                    Console.WriteLine($"ℹ️ Tenant '{tenant}' ya tiene usuarios");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al verificar tenants: {ex.Message}");
         }
 
         Console.WriteLine("Proceso de migraciones completado");
