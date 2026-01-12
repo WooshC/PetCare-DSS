@@ -1,0 +1,67 @@
+# Build Results
+bin/
+obj/
+*.dll
+*.exe
+*.so
+*.dylib
+*.o
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.sln.docstates
+*.sln.vs/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Local user-specific files
+appsettings.Development.json
+appsettings.Local.json
+
+# Logs
+logs/
+*.log
+
+# NuGet
+packages/
+.nuget/
+
+# Build folders
+Release/
+Debug/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE Specific
+.env
+.env.local
+.vscode/launch.json
+.vscode/settings.json
+
+# Database
+*.mdf
+*.ldf
+*.ndf
+
+# Testing
+TestResults/
+coverage/
+
+# Node (if applicable)
+node_modules/
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+*~

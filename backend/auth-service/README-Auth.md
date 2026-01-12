@@ -119,14 +119,60 @@ PetCare.Auth/
 }
 ```
 
+## Estado de Requisitos Funcionales de Autenticación 📋
+
+### Requisitos de AUTH Implementados ✅
+
+| ID | Tipo | Descripción | Status | CC | Documento |
+|----|------|-------------|--------|----|----|
+| **RF-01** | Req. Funcional | Autenticación JWT universal | ✅ COMPLETO | FIA_UID.2, FIA_UAU.2 | [Ver Auth](PetCare.Auth/Services/AuthService.cs#L178) |
+| **RF-02** | Req. Funcional | Bloqueo de cuenta tras 5 intentos fallidos (30 min) | ✅ IMPLEMENTADO | FIA_AFL.1 | [RF-02_ESPECIFICACION_COMPLETA.md](RF-02_ESPECIFICACION_COMPLETA.md) |
+| **RF-03** | Req. Funcional | Política de contraseñas fuertes (mín 8 chars, alfanumérico) | ⏳ PENDIENTE | FIA_SOS.1 | Planeado Sprint 2 |
+| **RF-04** | Req. Funcional | Mensajes de error genéricos (anti-enumeración) | ✅ ESPECIFICADO | FIA_UAU.7 | [RF-02_ESPECIFICACION_COMPLETA.md#rf-028-mensaje-genérico](RF-02_ESPECIFICACION_COMPLETA.md#rf-028-mensaje-genérico) |
+| **RF-05** | Req. Funcional | Atributos de sesión en JWT (sub, role, tenant, mfa) | ✅ IMPLEMENTADO | FIA_ATD.1, FIA_USB.1 | [GenerarTokenJWT()](PetCare.Auth/Services/AuthService.cs#L200) |
+| **RF-10** | Req. Funcional | Hashing seguro con BCrypt/Argon2 | ✅ HEREDADO | FCS_COP.1 | ASP.NET Identity (default) |
+
+### Requisitos No Funcionales de AUTH 🔒
+
+| ID | Tipo | Descripción | Status | CC | Documento |
+|----|------|-------------|--------|----|----|
+| **RNF-01** | No Funcional | TLS 1.2+ obligatorio en comunicaciones | ✅ CONFIGURADO | FDP_UCT.1 | Program.cs HTTPS |
+| **RNF-02** | No Funcional | Cifrado en reposo + secretos en Vault | ⏳ PENDIENTE (Producción) | FDP_ITT.2 | Implementar en Prod |
+
+### Historias de Usuario (AUTH-related) 👤
+
+| ID | Descripción | Status | CC | Sprint |
+|----|-------------|--------|----|----|
+| **HU-03** | MFA para admins en operaciones críticas | 📋 ESPECIFICADA | FIA_UAU.5 | Sprint 4 |
+
+---
+
 ## Características Implementadas ✨
 
-- ✅ **Autenticación JWT** con tokens seguros
-- ✅ **Registro de usuarios** con validación
-- ✅ **Login con credenciales** 
+### Core Authentication
+- ✅ **Autenticación JWT** con tokens seguros (RF-01)
+- ✅ **Registro de usuarios** con validación de roles (RF-01)
+- ✅ **Login con credenciales** y validación de tenant (RF-01)
+- ✅ **Bloqueo de cuenta** tras 5 intentos fallidos - 30 min (RF-02) 🆕
+- ✅ **Auto-desbloqueo** automático (RF-02) 🆕
 - ✅ **Reset de contraseña** por email (simulado)
-- ✅ **Roles de usuario** (Admin, Cliente, Cuidador)
-- ✅ **Validación de datos** con Data Annotations
+- ✅ **Cambio de contraseña** directo
+- ✅ **Mensajes de error genéricos** para anti-enumeration (RF-04)
+
+### JWT & Security
+- ✅ **JWT con claims** (sub, email, name, role, tenant, mfa) (RF-05)
+- ✅ **Validación de tenant** en cada operación (RF-01)
+- ✅ **Validación de rol** restrictiva en registro (RF-01)
+- ✅ **Hashing seguro** de contraseñas (RF-10)
+- ✅ **HTTPS/TLS 1.2+** obligatorio (RNF-01)
+
+### Roles & Multi-tenancy
+- ✅ **Roles de usuario** (Admin, Cliente, Cuidador) (RF-01)
+- ✅ **Multi-tenancy** con IdentificadorArrendador (RF-01)
+- ✅ **Bootstrap de admin** one-time con validación (RF-01)
+- ✅ **Segregación por tenant** en queries (RF-01)
+
+### Infrastructure
 - ✅ **Swagger/OpenAPI** para documentación
 - ✅ **Base de datos automática** en desarrollo
 - ✅ **Migraciones automáticas** con EF Core
