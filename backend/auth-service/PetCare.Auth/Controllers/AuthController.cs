@@ -13,160 +13,163 @@ namespace PetCareServicios.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService;
-        private readonly UserManager<User> _userManager;
+        private readonly AuthService _servicioAutenticacion;
+        private readonly UserManager<User> _gestorUsuarios;
 
-        public AuthController(AuthService authService, UserManager<User> userManager)
+        public AuthController(AuthService servicioAutenticacion, UserManager<User> gestorUsuarios)
         {
-            _authService = authService;
-            _userManager = userManager;
+            _servicioAutenticacion = servicioAutenticacion;
+            _gestorUsuarios = gestorUsuarios;
         }
 
         /// <summary>
-        /// Registro de nuevos usuarios
+        /// Registro de nuevos usuarios con soporte multi-tenancy
         /// </summary>
         [HttpPost("register")]
-        public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
+        public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest solicitud)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.RegisterAsync(request);
+            var resultado = await _servicioAutenticacion.RegisterAsync(solicitud);
             
-            if (!result.Success)
+            if (!resultado.Success)
             {
-                return BadRequest(result);
+                return BadRequest(resultado);
             }
 
-            return Ok(result);
+            return Ok(resultado);
         }
 
         /// <summary>
-        /// Inicio de sesión (obtener JWT)
+        /// Inicio de sesión (obtener JWT con claims de tenant)
         /// </summary>
         [HttpPost("login")]
-        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest solicitud)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.LoginAsync(request);
+            var resultado = await _servicioAutenticacion.LoginAsync(solicitud);
             
-            if (!result.Success)
+            if (!resultado.Success)
             {
-                return Unauthorized(result);
+                return Unauthorized(resultado);
             }
 
-            return Ok(result);
+            return Ok(resultado);
         }
 
         /// <summary>
         /// Solicitar reset de contraseña
         /// </summary>
         [HttpPost("reset-password")]
-        public async Task<ActionResult<PasswordResetResponse>> RequestPasswordReset([FromBody] PasswordResetRequest request)
+        public async Task<ActionResult<PasswordResetResponse>> RequestPasswordReset([FromBody] PasswordResetRequest solicitud)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.RequestPasswordResetAsync(request);
+            var resultado = await _servicioAutenticacion.RequestPasswordResetAsync(solicitud);
             
-            if (!result.Success)
+            if (!resultado.Success)
             {
-                return BadRequest(result);
+                return BadRequest(resultado);
             }
 
-            return Ok(result);
+            return Ok(resultado);
         }
 
         /// <summary>
         /// Confirmar reset de contraseña
         /// </summary>
         [HttpPost("confirm-reset")]
-        public async Task<ActionResult<PasswordResetResponse>> ConfirmPasswordReset([FromBody] PasswordResetConfirmRequest request)
+        public async Task<ActionResult<PasswordResetResponse>> ConfirmPasswordReset([FromBody] PasswordResetConfirmRequest solicitud)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.ConfirmPasswordResetAsync(request);
+            var resultado = await _servicioAutenticacion.ConfirmPasswordResetAsync(solicitud);
             
-            if (!result.Success)
+            if (!resultado.Success)
             {
-                return BadRequest(result);
+                return BadRequest(resultado);
             }
 
-            return Ok(result);
+            return Ok(resultado);
         }
 
         /// <summary>
         /// Cambio directo de contraseña (para testing)
         /// </summary>
         [HttpPost("change-password")]
-        public async Task<ActionResult<PasswordResetResponse>> ChangePassword([FromBody] DirectPasswordChangeRequest request)
+        public async Task<ActionResult<PasswordResetResponse>> ChangePassword([FromBody] DirectPasswordChangeRequest solicitud)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = await _authService.ChangePasswordAsync(request);
+            var resultado = await _servicioAutenticacion.ChangePasswordAsync(solicitud);
             
-            if (!result.Success)
+            if (!resultado.Success)
             {
-                return BadRequest(result);
+                return BadRequest(resultado);
             }
 
-            return Ok(result);
+            return Ok(resultado);
         }
 
         /// <summary>
-        /// Obtener lista de usuarios
+        /// Obtener lista de usuarios del arrendador actual
         /// </summary>
         [HttpGet("users")]
         [Authorize] 
-        public async Task<ActionResult<List<UserInfo>>> GetUsers()
+        public async Task<ActionResult<List<InformacionUsuario>>> GetUsers()
         {
             try
             {
                 Console.WriteLine("🔍 Obteniendo lista de usuarios...");
                 
-                var users = new List<UserInfo>();
-                var allUsers = _userManager.Users.ToList();
+                var usuarios = new List<InformacionUsuario>();
+                var todosLosUsuarios = _gestorUsuarios.Users.ToList();
                 
-                Console.WriteLine($"📊 Total de usuarios encontrados: {allUsers.Count}");
+                Console.WriteLine($"📊 Total de usuarios encontrados: {todosLosUsuarios.Count}");
                 
-                foreach (var user in allUsers)
+                foreach (var usuario in todosLosUsuarios)
                 {
                     try
                     {
-                        var roles = await _userManager.GetRolesAsync(user);
-                        users.Add(new UserInfo
+                        var roles = await _gestorUsuarios.GetRolesAsync(usuario);
+                        usuarios.Add(new InformacionUsuario
                         {
-                            Id = user.Id,
-                            Email = user.Email ?? string.Empty,
-                            Name = user.Name ?? string.Empty,
-                            CreatedAt = user.CreatedAt,
-                            Roles = roles.ToList()
+                            Identificador = usuario.Id,
+                            Correo = usuario.Email ?? string.Empty,
+                            Nombre = usuario.Nombre ?? string.Empty,
+                            Telefono = usuario.PhoneNumber ?? string.Empty,
+                            IdentificadorArrendador = usuario.IdentificadorArrendador,
+                            FechaCreacion = usuario.FechaCreacion,
+                            Roles = roles.ToList(),
+                            MFAHabilitado = usuario.MFAHabilitado
                         });
                         
-                        Console.WriteLine($"✅ Usuario procesado: {user.Email} con roles: {string.Join(", ", roles)}");
+                        Console.WriteLine($"✅ Usuario procesado: {usuario.Email} con roles: {string.Join(", ", roles)}");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"⚠️ Error procesando usuario {user.Email}: {ex.Message}");
+                        Console.WriteLine($"⚠️ Error procesando usuario {usuario.Email}: {ex.Message}");
                     }
                 }
 
-                Console.WriteLine($"🎉 Lista de usuarios generada exitosamente: {users.Count} usuarios");
-                return Ok(users);
+                Console.WriteLine($"🎉 Lista de usuarios generada exitosamente: {usuarios.Count} usuarios");
+                return Ok(usuarios);
             }
             catch (Exception ex)
             {
@@ -184,27 +187,27 @@ namespace PetCareServicios.Controllers
         {
             try
             {
-                var user = await _userManager.FindByIdAsync(id.ToString());
+                var usuario = await _gestorUsuarios.FindByIdAsync(id.ToString());
                 
-                if (user == null)
+                if (usuario == null)
                 {
                     return NotFound(new { message = "Usuario no encontrado" });
                 }
 
-                var roles = await _userManager.GetRolesAsync(user);
+                var roles = await _gestorUsuarios.GetRolesAsync(usuario);
                 
-                var userInfo = new UserInfoResponse
+                var informacion = new UserInfoResponse
                 {
-                    Id = user.Id,
-                    Name = user.Name ?? string.Empty,
-                    Email = user.Email ?? string.Empty,
-                    PhoneNumber = user.PhoneNumber ?? string.Empty,
-                    UserName = user.UserName ?? string.Empty,
-                    CreatedAt = user.CreatedAt,
+                    Id = usuario.Id,
+                    Name = usuario.Nombre ?? string.Empty,
+                    Email = usuario.Email ?? string.Empty,
+                    PhoneNumber = usuario.PhoneNumber ?? string.Empty,
+                    UserName = usuario.UserName ?? string.Empty,
+                    CreatedAt = usuario.FechaCreacion,
                     Roles = roles.ToList()
                 };
 
-                return Ok(userInfo);
+                return Ok(informacion);
             }
             catch (Exception ex)
             {
@@ -227,38 +230,40 @@ namespace PetCareServicios.Controllers
         }
 
         /// <summary>
-        /// Obtener información del usuario actual
+        /// Obtener información del usuario actual (con tenant)
         /// </summary>
         [HttpGet("me")]
         [Authorize]
-        public async Task<ActionResult<UserInfo>> GetCurrentUser()
+        public async Task<ActionResult<InformacionUsuario>> GetCurrentUser()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var idUsuario = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(idUsuario))
             {
                 return Unauthorized();
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var usuario = await _gestorUsuarios.FindByIdAsync(idUsuario);
             
-            if (user == null)
+            if (usuario == null)
             {
                 return NotFound("Usuario no encontrado");
             }
 
-            var roles = await _userManager.GetRolesAsync(user);
-            var userInfo = new UserInfo
+            var roles = await _gestorUsuarios.GetRolesAsync(usuario);
+            var informacion = new InformacionUsuario
             {
-                Id = user.Id,
-                Email = user.Email ?? string.Empty,
-                Name = user.Name ?? string.Empty,
-                PhoneNumber = user.PhoneNumber ?? string.Empty,
-                CreatedAt = user.CreatedAt,
-                Roles = roles.ToList()
+                Identificador = usuario.Id,
+                Correo = usuario.Email ?? string.Empty,
+                Nombre = usuario.Nombre ?? string.Empty,
+                Telefono = usuario.PhoneNumber ?? string.Empty,
+                IdentificadorArrendador = usuario.IdentificadorArrendador,
+                FechaCreacion = usuario.FechaCreacion,
+                Roles = roles.ToList(),
+                MFAHabilitado = usuario.MFAHabilitado
             };
 
-            return Ok(userInfo);
+            return Ok(informacion);
         }
     }
 } 

@@ -17,8 +17,9 @@ namespace PetCareServicios.Data
             // Configuraciones adicionales del modelo si son necesarias
             builder.Entity<User>(entity =>
             {
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.Nombre).IsRequired();
+                entity.Property(e => e.FechaCreacion).HasDefaultValueSql("GETUTCDATE()");
+                entity.Property(e => e.IdentificadorArrendador).IsRequired().HasMaxLength(100);
             });
 
             builder.Entity<UserRole>(entity =>

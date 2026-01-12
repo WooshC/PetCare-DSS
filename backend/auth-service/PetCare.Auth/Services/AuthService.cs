@@ -10,195 +10,256 @@ namespace PetCareServicios.Services
 {
     public class AuthService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly IConfiguration _config;
+        private readonly UserManager<User> _gestorUsuarios;
+        private readonly SignInManager<User> _gestorSesion;
+        private readonly IConfiguration _configuracion;
 
         public AuthService(
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
-            IConfiguration config)
+            UserManager<User> gestorUsuarios,
+            SignInManager<User> gestorSesion,
+            IConfiguration configuracion)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _config = config;
+            _gestorUsuarios = gestorUsuarios;
+            _gestorSesion = gestorSesion;
+            _configuracion = configuracion;
         }
 
-        public async Task<AuthResponse> RegisterAsync(RegisterRequest model)
+        /// <summary>
+        /// Registra un nuevo usuario con soporte para multi-tenancy
+        /// </summary>
+        public async Task<AuthResponse> RegisterAsync(RegisterRequest solicitud)
         {
-            var existingUserByPhone = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            // Validar que el correo no esté registrado en el mismo arrendador
+            var usuarioExistente = await _gestorUsuarios.Users
+                .FirstOrDefaultAsync(u => u.Email == solicitud.Correo && 
+                                         u.IdentificadorArrendador == solicitud.IdentificadorArrendador);
             
-            if (existingUserByPhone != null)
+            if (usuarioExistente != null)
             {
                 return new AuthResponse
                 {
                     Success = false,
-                    Message = "El número de teléfono ya está registrado."
+                    Message = "No se pudo completar el registro. Verifique los datos e intente nuevamente."
                 };
             }
 
-            var user = new User
-            {
-                UserName = model.Email,
-                Email = model.Email,
-                Name = model.Name,
-                PhoneNumber = model.PhoneNumber // ✅ ASIGNAR EL PHONE NUMBER
-            };
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
+            // Validar que el teléfono no esté registrado en el mismo arrendador
+            var usuarioPorTelefono = await _gestorUsuarios.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == solicitud.Telefono && 
+                                         u.IdentificadorArrendador == solicitud.IdentificadorArrendador);
+            
+            if (usuarioPorTelefono != null)
             {
                 return new AuthResponse
                 {
                     Success = false,
-                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                    Message = "No se pudo completar el registro. Verifique los datos e intente nuevamente."
+                };
+            }
+
+            var nuevoUsuario = new User
+            {
+                UserName = solicitud.Correo,
+                Email = solicitud.Correo,
+                Nombre = solicitud.Nombre,
+                PhoneNumber = solicitud.Telefono,
+                IdentificadorArrendador = solicitud.IdentificadorArrendador
+            };
+
+            var resultadoCreacion = await _gestorUsuarios.CreateAsync(nuevoUsuario, solicitud.Contraseña);
+
+            if (!resultadoCreacion.Succeeded)
+            {
+                return new AuthResponse
+                {
+                    Success = false,
+                    Message = "No se pudo completar el registro. Verifique los datos e intente nuevamente."
                 };
             }
 
             // Asignar rol según el registro
-            var roleResult = await _userManager.AddToRoleAsync(user, model.Role);
-            if (!roleResult.Succeeded)
+            var resultadoRol = await _gestorUsuarios.AddToRoleAsync(nuevoUsuario, solicitud.Rol);
+            if (!resultadoRol.Succeeded)
             {
                 // Si falla la asignación de rol, eliminar el usuario creado
-                await _userManager.DeleteAsync(user);
+                await _gestorUsuarios.DeleteAsync(nuevoUsuario);
                 return new AuthResponse
                 {
                     Success = false,
-                    Message = $"Error al asignar rol: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}"
+                    Message = "No se pudo completar el registro. Verifique los datos e intente nuevamente."
                 };
             }
 
             return new AuthResponse
             {
                 Success = true,
-                Token = await GenerateJwtToken(user),
-                Message = $"Registro exitoso como {model.Role}"
+                Token = await GenerarTokenJWT(nuevoUsuario),
+                Message = $"Registro exitoso como {solicitud.Rol}"
             };
         }
 
-       public async Task<AuthResponse> LoginAsync(LoginRequest model)
+        /// <summary>
+        /// Inicia sesión de usuario con validación de arrendador
+        /// </summary>
+        public async Task<AuthResponse> LoginAsync(LoginRequest solicitud)
         {
-            var result = await _signInManager.PasswordSignInAsync(
-                model.Email, model.Password, false, false);
+            var resultado = await _gestorSesion.PasswordSignInAsync(
+                solicitud.Correo, solicitud.Contraseña, false, false);
 
-            if (!result.Succeeded)
+            if (!resultado.Succeeded)
             {
                 return new AuthResponse
                 {
                     Success = false,
-                    Message = "Credenciales inválidas"
+                    Message = "No se pudo completar el inicio de sesión. Verifique los datos e intente nuevamente."
                 };
             }
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
+            var usuario = await _gestorUsuarios.FindByEmailAsync(solicitud.Correo);
+            if (usuario == null)
             {
                 return new AuthResponse
                 {
                     Success = false,
-                    Message = "Usuario no encontrado"
+                    Message = "No se pudo completar el inicio de sesión. Verifique los datos e intente nuevamente."
+                };
+            }
+
+            // Validar que el arrendador coincida
+            if (usuario.IdentificadorArrendador != solicitud.IdentificadorArrendador)
+            {
+                return new AuthResponse
+                {
+                    Success = false,
+                    Message = "No se pudo completar el inicio de sesión. Verifique los datos e intente nuevamente."
                 };
             }
 
             // Obtener roles del usuario
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await _gestorUsuarios.GetRolesAsync(usuario);
 
             return new AuthResponse
             {
                 Success = true,
-                Token = await GenerateJwtToken(user),
+                Token = await GenerarTokenJWT(usuario),
                 User = new UserInfo
                 {
-                    Id = user.Id,
-                    Name = user.Name,
-                    Email = user.Email,
-                    PhoneNumber = user.PhoneNumber,
+                    Id = usuario.Id,
+                    Name = usuario.Nombre ?? string.Empty,
+                    Email = usuario.Email ?? string.Empty,
+                    PhoneNumber = usuario.PhoneNumber ?? string.Empty,
+                    IdentificadorArrendador = usuario.IdentificadorArrendador,
                     Roles = roles.ToList()
                 },
                 Message = "Inicio de sesión exitoso"
             };
         }
 
-        private async Task<string> GenerateJwtToken(User user)
+        /// <summary>
+        /// Genera token JWT con claims estándar según Common Criteria FIA_ATD.1
+        /// Incluye: sub (identificador), role, tenant, mfa, iss, aud, exp, iat
+        /// </summary>
+        private async Task<string> GenerarTokenJWT(User usuario)
         {
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await _gestorUsuarios.GetRolesAsync(usuario);
             
-            var claims = new List<Claim>
+            var reclamaciones = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim(ClaimTypes.Name, user.Name ?? string.Empty),
-                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty) // ✅ AGREGAR PHONE AL TOKEN
+                // Claim requerido: sub (asunto/identificador del usuario)
+                new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+                
+                // Email del usuario
+                new Claim(ClaimTypes.Email, usuario.Email ?? string.Empty),
+                
+                // Nombre del usuario
+                new Claim(ClaimTypes.Name, usuario.Nombre ?? string.Empty),
+                
+                // Teléfono del usuario
+                new Claim(ClaimTypes.MobilePhone, usuario.PhoneNumber ?? string.Empty),
+                
+                // TENANT: Identificador del arrendador (multi-tenancy)
+                new Claim("tenant", usuario.IdentificadorArrendador ?? string.Empty),
+                
+                // MFA: Indica si está habilitado (RFC 8174)
+                new Claim("mfa", usuario.MFAHabilitado.ToString().ToLower()),
+                
+                // Tiempo de emisión (RFC 7519)
+                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
 
-            foreach (var role in roles)
+            // Agregar roles como claims
+            foreach (var rol in roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                reclamaciones.Add(new Claim(ClaimTypes.Role, rol));
             }
 
-            var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(Convert.ToDouble(_config["Jwt:ExpireDays"]));
+            var claveJWT = _configuracion["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key no configurada");
+            var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(claveJWT));
+            var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+            var expiracion = DateTime.UtcNow.AddDays(Convert.ToDouble(_configuracion["Jwt:ExpireDays"] ?? "7"));
 
             var token = new JwtSecurityToken(
-                _config["Jwt:Issuer"],
-                _config["Jwt:Audience"],
-                claims,
-                expires: expires,
-                signingCredentials: creds
+                issuer: _configuracion["Jwt:Issuer"],
+                audience: _configuracion["Jwt:Audience"],
+                claims: reclamaciones,
+                expires: expiracion,
+                signingCredentials: credenciales
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        // ... resto de los métodos se mantienen igual
+        /// <summary>
+        /// Solicita reset de contraseña (mensaje genérico para anti-enumeración)
+        /// </summary>
         public async Task<PasswordResetResponse> RequestPasswordResetAsync(PasswordResetRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var usuario = await _gestorUsuarios.FindByEmailAsync(request.Email);
             
-            if (user == null)
+            if (usuario == null)
             {
+                // Respuesta genérica para no revelar si el usuario existe (RF-04)
                 return new PasswordResetResponse
                 {
-                    Success = false,
-                    Message = "Si el email existe, se enviará un enlace de restablecimiento"
+                    Success = true,
+                    Message = "Si el correo existe en nuestro sistema, se enviará un enlace de restablecimiento"
                 };
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var token = await _gestorUsuarios.GeneratePasswordResetTokenAsync(usuario);
             
             return new PasswordResetResponse
             {
                 Success = true,
-                Message = "Se ha enviado un enlace de restablecimiento a su email",
+                Message = "Si el correo existe en nuestro sistema, se enviará un enlace de restablecimiento",
                 Token = token // Solo para testing - en producción no se devuelve
             };
         }
 
+        /// <summary>
+        /// Confirma el reset de contraseña
+        /// </summary>
         public async Task<PasswordResetResponse> ConfirmPasswordResetAsync(PasswordResetConfirmRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var usuario = await _gestorUsuarios.FindByEmailAsync(request.Email);
             
-            if (user == null)
+            if (usuario == null)
             {
                 return new PasswordResetResponse
                 {
                     Success = false,
-                    Message = "Usuario no encontrado"
+                    Message = "Datos inválidos o token expirado"
                 };
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+            var resultado = await _gestorUsuarios.ResetPasswordAsync(usuario, request.Token, request.NewPassword);
             
-            if (!result.Succeeded)
+            if (!resultado.Succeeded)
             {
                 return new PasswordResetResponse
                 {
                     Success = false,
-                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                    Message = "Datos inválidos o token expirado"
                 };
             }
 
@@ -209,11 +270,14 @@ namespace PetCareServicios.Services
             };
         }
 
+        /// <summary>
+        /// Cambia la contraseña del usuario
+        /// </summary>
         public async Task<PasswordResetResponse> ChangePasswordAsync(DirectPasswordChangeRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var usuario = await _gestorUsuarios.FindByEmailAsync(request.Email);
             
-            if (user == null)
+            if (usuario == null)
             {
                 return new PasswordResetResponse
                 {
@@ -222,15 +286,15 @@ namespace PetCareServicios.Services
                 };
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
+            var token = await _gestorUsuarios.GeneratePasswordResetTokenAsync(usuario);
+            var resultado = await _gestorUsuarios.ResetPasswordAsync(usuario, token, request.NewPassword);
             
-            if (!result.Succeeded)
+            if (!resultado.Succeeded)
             {
                 return new PasswordResetResponse
                 {
                     Success = false,
-                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                    Message = string.Join(", ", resultado.Errors.Select(e => e.Description))
                 };
             }
 
