@@ -110,15 +110,93 @@ namespace PetCareServicios.Services
         }
 
         /// <summary>
-        /// Inicia sesión de usuario con validación de arrendador
+        /// Inicia sesión de usuario con validación de arrendador y RF-02 (bloqueo de cuenta)
+        /// Implementa:
+        /// - RF-02.1: Rastreo de intentos fallidos
+        /// - RF-02.2: Límite de 5 intentos
+        /// - RF-02.3: Bloqueo temporal de 30 minutos
+        /// - RF-02.4: Auto-desbloqueo
+        /// - RF-02.5: Reset en login exitoso
+        /// - RF-02.6: Reset de ventana de 30 minutos
+        /// - RF-02.8: Mensaje genérico (anti-enumeration)
         /// </summary>
         public async Task<AuthResponse> LoginAsync(LoginRequest solicitud)
         {
+            const int MAX_INTENTOS = 5;
+            const int MINUTOS_BLOQUEO = 30;
+
+            // [1] Obtener usuario por email
+            var usuario = await _gestorUsuarios.FindByEmailAsync(solicitud.Correo);
+
+            if (usuario != null)
+            {
+                // [2] Verificar si cuenta está bloqueada (RF-02.3 y RF-02.4)
+                if (usuario.CuentaBloqueada)
+                {
+                    if (usuario.FechaBloqueo.HasValue)
+                    {
+                        var tiempoDecorrido = DateTime.UtcNow - usuario.FechaBloqueo.Value;
+                        
+                        if (tiempoDecorrido.TotalMinutes >= MINUTOS_BLOQUEO)
+                        {
+                            // [2a] Auto-unlock: Se han pasado 30 minutos (RF-02.4)
+                            usuario.CuentaBloqueada = false;
+                            usuario.FechaBloqueo = null;
+                            usuario.IntentosLoginFallidos = 0;
+                            usuario.FechaUltimoIntentoFallido = null;
+                            await _gestorUsuarios.UpdateAsync(usuario);
+                            // Proceder con login normal
+                        }
+                        else
+                        {
+                            // Aún bloqueada (< 30 minutos)
+                            return new AuthResponse
+                            {
+                                Success = false,
+                                Message = "No se pudo completar el inicio de sesión. Verifique los datos e intente nuevamente."
+                            };
+                        }
+                    }
+                }
+
+                // [3] Reset de ventana de 30 minutos (RF-02.6)
+                if (usuario.FechaUltimoIntentoFallido.HasValue)
+                {
+                    var tiempoDecorrido = DateTime.UtcNow - usuario.FechaUltimoIntentoFallido.Value;
+                    if (tiempoDecorrido.TotalMinutes >= MINUTOS_BLOQUEO)
+                    {
+                        // Han pasado 30 minutos, resetear contador
+                        usuario.IntentosLoginFallidos = 0;
+                        usuario.FechaUltimoIntentoFallido = null;
+                        await _gestorUsuarios.UpdateAsync(usuario);
+                    }
+                }
+            }
+
+            // [4] Validar credenciales
             var resultado = await _gestorSesion.PasswordSignInAsync(
                 solicitud.Correo, solicitud.Contraseña, false, false);
 
             if (!resultado.Succeeded)
             {
+                // [5a] Login FALLIDO - Incrementar contador (RF-02.1 y RF-02.2)
+                if (usuario != null)
+                {
+                    usuario.IntentosLoginFallidos++;
+                    usuario.FechaUltimoIntentoFallido = DateTime.UtcNow;
+
+                    if (usuario.IntentosLoginFallidos >= MAX_INTENTOS)
+                    {
+                        usuario.CuentaBloqueada = true;
+                        usuario.FechaBloqueo = DateTime.UtcNow;
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[RF-02] CUENTA BLOQUEADA - Email: {usuario.Email}, Tenant: {usuario.IdentificadorArrendador}, Timestamp: {DateTime.UtcNow:O}");
+                    }
+
+                    await _gestorUsuarios.UpdateAsync(usuario);
+                }
+
+                // RF-02.8: Mensaje genérico (no revelar si usuario existe, si es bloqueada, etc)
                 return new AuthResponse
                 {
                     Success = false,
@@ -126,7 +204,8 @@ namespace PetCareServicios.Services
                 };
             }
 
-            var usuario = await _gestorUsuarios.FindByEmailAsync(solicitud.Correo);
+            // [5b] Recargar usuario y validar tenant
+            usuario = await _gestorUsuarios.FindByEmailAsync(solicitud.Correo);
             if (usuario == null)
             {
                 return new AuthResponse
@@ -136,7 +215,6 @@ namespace PetCareServicios.Services
                 };
             }
 
-            // Validar que el arrendador coincida
             if (usuario.IdentificadorArrendador != solicitud.IdentificadorArrendador)
             {
                 return new AuthResponse
@@ -146,7 +224,14 @@ namespace PetCareServicios.Services
                 };
             }
 
-            // Obtener roles del usuario
+            // [6] LOGIN EXITOSO - Reset de contador (RF-02.5)
+            usuario.IntentosLoginFallidos = 0;
+            usuario.FechaUltimoIntentoFallido = null;
+            usuario.CuentaBloqueada = false;
+            usuario.FechaBloqueo = null;
+            await _gestorUsuarios.UpdateAsync(usuario);
+
+            // [7] Generar JWT
             var roles = await _gestorUsuarios.GetRolesAsync(usuario);
 
             return new AuthResponse
