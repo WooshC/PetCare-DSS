@@ -106,6 +106,7 @@ export const authService = {
         Name: userData.name,
         PhoneNumber: userData.phoneNumber,
         Role: userData.role,
+        IdentificadorArrendador: userData.identificadorArrendador || 'petcare-ecuador',
       });
 
       const backendData = response.data;
