@@ -1,4 +1,5 @@
 // models/Cuidador.js
+
 export class CuidadorRequest {
   constructor(
     documentoIdentidad = '',
@@ -17,7 +18,6 @@ export class CuidadorRequest {
   }
 }
 
-// models/Cuidador.js
 export class CuidadorResponse {
   constructor(data = {}) {
     this.cuidadorID = data.cuidadorID || 0;
@@ -42,5 +42,4 @@ export class CuidadorResponse {
     this.fechaCreacion = data.fechaCreacion || null;
     this.fechaActualizacion = data.fechaActualizacion || null;
   }
-
 }
