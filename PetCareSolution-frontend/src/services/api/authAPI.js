@@ -10,8 +10,9 @@ export const authService = {
   login: async (credentials) => {
     try {
       const response = await api.post('/login', {
-        Email: credentials.email,
-        Password: credentials.password,
+        Correo: credentials.email,
+        Contraseña: credentials.password,
+        IdentificadorArrendador: credentials.identificadorArrendador || 'petcare-ecuador',
       });
 
       const backendData = response.data;
@@ -101,11 +102,11 @@ export const authService = {
   register: async (userData) => {
     try {
       const response = await api.post('/register', {
-        Email: userData.email,
-        Password: userData.password,
-        Name: userData.name,
-        PhoneNumber: userData.phoneNumber,
-        Role: userData.role,
+        Correo: userData.email,
+        Contraseña: userData.password,
+        Nombre: userData.name,
+        Telefono: userData.phoneNumber,
+        Rol: userData.role,
         IdentificadorArrendador: userData.identificadorArrendador || 'petcare-ecuador',
       });
 

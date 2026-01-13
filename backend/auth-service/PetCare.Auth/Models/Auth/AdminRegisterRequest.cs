@@ -20,7 +20,7 @@ namespace PetCareServicios.Models.Auth
         /// </summary>
         [Required(ErrorMessage = "La contraseña es obligatoria")]
         [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$", 
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=\[\]{};:'""\\|,.<>\/?]{8,}$", 
             ErrorMessage = "La contraseña debe contener minúsculas, mayúsculas y números")]
         public string Contraseña { get; set; } = string.Empty;
 

@@ -99,7 +99,7 @@ const LoginForm = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const result = await authService.login({ email: formData.email, password: formData.password });
+      const result = await authService.login({ email: formData.email, password: formData.password, identificadorArrendador: 'petcare-ecuador' });
       if (!result.success) throw new Error(result.message || 'Error en la autenticación');
       const user = { ...result.user, currentRole: selectedRole };
       localStorage.setItem('user', JSON.stringify(user));
