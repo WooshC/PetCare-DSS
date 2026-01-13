@@ -23,6 +23,7 @@ const registerSchema = z.object({
   role: z.enum(['Cliente', 'Cuidador'], { required_error: 'Selecciona un perfil' }),
   documentoIdentidad: z.string().min(1, 'Requerido'),
   telefonoEmergencia: z.string().min(1, 'Requerido'),
+  identificadorArrendador: z.string().min(1, 'Identificador de organización requerido'),
   biografia: z.string().optional(),
   experiencia: z.string().optional(),
   horarioAtencion: z.string().optional(),
@@ -43,7 +44,10 @@ const RegisterForm = () => {
 
   const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm({
     resolver: zodResolver(registerSchema),
-    mode: 'onBlur'
+    mode: 'onBlur',
+    defaultValues: {
+      identificadorArrendador: 'petcare-ecuador'
+    }
   });
 
   const selectedRole = watch('role');
@@ -52,7 +56,7 @@ const RegisterForm = () => {
     setIsLoading(true);
     try {
       const authResult = await authService.register({
-        email: data.email, password: data.password, name: data.name, phoneNumber: data.phoneNumber, role: data.role
+        email: data.email, password: data.password, name: data.name, phoneNumber: data.phoneNumber, role: data.role, identificadorArrendador: data.identificadorArrendador
       });
       if (!authResult.success) throw new Error(authResult.error || 'Error en el registro');
       const token = authResult.token || authResult.data?.token;
@@ -172,6 +176,11 @@ const RegisterForm = () => {
 
           <FormSection title="Contacto de Respaldo" icon={Phone}>
             <Input label="Teléfono de Emergencia" {...register('telefonoEmergencia')} error={errors.telefonoEmergencia?.message} placeholder="Un número de contacto extra" icon={<Phone className="w-4 h-4 text-slate-400" />} className="rounded-2xl bg-slate-50" />
+          </FormSection>
+
+          <FormSection title="Organización" icon={Shield}>
+            <Input label="Identificador de Organización" {...register('identificadorArrendador')} error={errors.identificadorArrendador?.message} placeholder="petcare-ecuador" icon={<Layout className="w-4 h-4 text-slate-400" />} className="rounded-2xl bg-slate-50" disabled />
+            <p className="text-xs text-slate-500 mt-2">Por defecto utilizamos: <span className="font-bold text-slate-700">petcare-ecuador</span></p>
           </FormSection>
 
           <div className="bg-slate-900 rounded-[2.5rem] p-10 text-center shadow-2xl shadow-slate-200">
