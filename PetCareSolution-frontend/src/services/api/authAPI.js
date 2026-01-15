@@ -9,30 +9,16 @@ const api = axios.create({
 export const authService = {
   login: async (credentials) => {
     try {
-      console.log('🚀 [authAPI] Intentando login con:', {
-        email: credentials.email,
+      const response = await api.post('/login', {
+        Correo: credentials.email,
+        Contraseña: credentials.password,
+        IdentificadorArrendador: credentials.identificadorArrendador || 'petcare-ecuador',
       });
-
-      // ✅ SOLUCIÓN: Usar nombres en español Y agregar IdentificadorArrendador
-      const payload = {
-        Correo: credentials.email,                    // ✅ Cambio: Email → Correo
-        Contraseña: credentials.password,              // ✅ Cambio: Password → Contraseña
-        IdentificadorArrendador: 'petcare-default'     // ✅ NUEVO: Campo requerido por LoginRequest.cs
-      };
-
-      console.log('📤 [authAPI] Payload de login:', {
-        Correo: payload.Correo,
-        Contraseña: '***',
-        IdentificadorArrendador: payload.IdentificadorArrendador
-      });
-
-      const response = await api.post('/login', payload);
-
-      console.log('✅ [authAPI] Login exitoso:', response.data);
 
       const backendData = response.data;
 
       if (backendData.success && backendData.token) {
+        // Normalizar el rol
         const rawRole = backendData.user?.roles?.[0] || 'Usuario';
         const normalizedRole = rawRole.toLowerCase();
 
@@ -41,10 +27,11 @@ export const authService = {
           name: backendData.user?.name || credentials.email.split('@')[0],
           email: credentials.email,
           phoneNumber: backendData.user?.phoneNumber || '',
-          role: normalizedRole,
-          rawRole: rawRole,
+          role: normalizedRole, // Usar el rol normalizado
+          rawRole: rawRole, // Guardar también el rol original
         };
 
+        // Guardar en localStorage
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', backendData.token);
 
@@ -58,18 +45,6 @@ export const authService = {
 
       throw new Error('Respuesta del servidor inválida');
     } catch (error) {
-      console.error('❌ [authAPI] Error en login:', error);
-      console.error('📋 [authAPI] Detalle del error:', error.response?.data);
-      console.error('🔍 [authAPI] Status code:', error.response?.status);
-      
-      // Mejorar mensajes de error de validación
-      if (error.response?.status === 400 && error.response?.data?.errors) {
-        const validationErrors = Object.entries(error.response.data.errors)
-          .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-          .join(' | ');
-        throw new Error(`Errores de validación: ${validationErrors}`);
-      }
-      
       throw new Error(error.response?.data?.error || error.response?.data?.message || 'Error en el login');
     }
   },
@@ -83,6 +58,7 @@ export const authService = {
         return { isValid: false };
       }
 
+      // Verificar si el token es válido llamando al endpoint de usuario actual
       try {
         const response = await authService.getCurrentUser(token);
         return {
@@ -90,6 +66,7 @@ export const authService = {
           user: response.user
         };
       } catch (error) {
+        // Limpiar datos inválidos
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         return { isValid: false };
@@ -98,6 +75,7 @@ export const authService = {
       return { isValid: false };
     }
   },
+
 
   getCompleteUserData: async (token) => {
     try {
@@ -123,57 +101,53 @@ export const authService = {
 
   register: async (userData) => {
     try {
-      console.log('🚀 [authAPI] Iniciando registro con datos:', userData);
-      
-      const payload = {
+      const response = await api.post('/register', {
         Correo: userData.email,
         Contraseña: userData.password,
         Nombre: userData.name,
         Telefono: userData.phoneNumber,
-        IdentificadorArrendador: 'petcare-default',
-        Rol: userData.role
+        Rol: userData.role,
+        IdentificadorArrendador: userData.identificadorArrendador || 'petcare-ecuador',
+      });
+
+      const backendData = response.data;
+
+      const registeredUser = {
+        id: backendData.user?.id,
+        name: backendData.user?.name || userData.name,
+        email: userData.email,
+        phoneNumber: backendData.user?.phoneNumber || userData.phoneNumber,
+        role: backendData.user?.role || userData.role,
       };
 
-      console.log('📤 [authAPI] Payload transformado:', payload);
-
-      const response = await api.post('/register', payload);
-
-      console.log('✅ [authAPI] Respuesta del servidor:', response.data);
-
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+      if (backendData.token) {
+        localStorage.setItem('user', JSON.stringify(registeredUser));
+        localStorage.setItem('token', backendData.token);
       }
 
-      const userInfo = {
-        id: null,
-        name: payload.Nombre,
-        email: payload.Correo,
-        phoneNumber: payload.Telefono,
-        role: payload.Rol.toLowerCase()
-      };
-
-      localStorage.setItem('user', JSON.stringify(userInfo));
-
       return {
-        success: true,
-        token: response.data.token,
-        user: userInfo,
-        message: response.data.message || 'Usuario registrado exitosamente'
+        success: backendData.success,
+        token: backendData.token,
+        user: registeredUser,
+        message: backendData.message,
+        error: backendData.error,
       };
-
     } catch (error) {
-      console.error('❌ [authAPI] Error en registro:', error);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.response?.data?.errors?.[0] ||
-                          error.message || 
-                          'Error al registrar usuario';
-      
-      return {
-        success: false,
-        error: errorMessage
-      };
+      const errorData = error.response?.data;
+      let errorMessage = 'Error en el registro';
+
+      if (errorData) {
+        if (errorData.errors) {
+          // Capturar errores de validación (ModelState)
+          errorMessage = Object.values(errorData.errors).flat().join('. ');
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      }
+
+      throw new Error(errorMessage);
     }
   },
 

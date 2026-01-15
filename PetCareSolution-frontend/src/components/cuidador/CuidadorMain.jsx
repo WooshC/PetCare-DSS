@@ -1,7 +1,6 @@
 // src/components/cuidador/CuidadorMain.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2 } from 'lucide-react';
 import CuidadorHeader from '../layout/CuidadorHeader';
 import CuidadorPerfil from '../cuidador/CuidadorPerfil';
 import SolicitudesSection from './SolicitudesSection';
@@ -25,22 +24,8 @@ const CuidadorMain = () => {
 
     const loading = authLoading || cuidadorLoading;
 
-    // 🚀 NUEVO: Redirigir al registro si no tiene perfil
-    useEffect(() => {
-        if (!loading && !cuidador && error) {
-            console.log('⚠️ Cuidador sin perfil detectado, redirigiendo al registro...');
-            navigate('/cuidador/registro', { replace: true });
-        }
-    }, [loading, cuidador, error, navigate]);
-
     // 🚀 CORRECCIÓN: Cargar contadores reales desde la API
     const loadCounters = async () => {
-        // Solo cargar contadores si el cuidador tiene perfil
-        if (!cuidador) {
-            setLoadingCounters(false);
-            return;
-        }
-
         try {
             setLoadingCounters(true);
 
@@ -70,19 +55,17 @@ const CuidadorMain = () => {
     };
 
     useEffect(() => {
-        // Solo cargar contadores si hay perfil de cuidador
-        if (cuidador) {
+        // Carga inicial
+        loadCounters();
+
+        // Polling cada 30 segundos para actualización dinámica
+        const intervalId = setInterval(() => {
+            console.log('Actualizando contadores automáticamente...');
             loadCounters();
+        }, 30000); // 30 segundos
 
-            // Polling cada 30 segundos para actualización dinámica
-            const intervalId = setInterval(() => {
-                console.log('Actualizando contadores automáticamente...');
-                loadCounters();
-            }, 30000); // 30 segundos
-
-            return () => clearInterval(intervalId);
-        }
-    }, [refreshTrigger, cuidador]);
+        return () => clearInterval(intervalId);
+    }, [refreshTrigger]);
 
     const handleEditProfile = () => {
         console.log('Abrir edición de perfil');
@@ -109,38 +92,6 @@ const CuidadorMain = () => {
     const handleActivasCountChange = (count) => {
         setActivasCount(count);
     };
-
-    // 🚀 NUEVO: Mostrar spinner mientras carga
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="w-16 h-16 text-blue-600 animate-spin mx-auto mb-4" />
-                    <p className="text-gray-600 text-lg">Cargando perfil de cuidador...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // 🚀 NUEVO: Mostrar error si hay problema (aunque ya se redirige automáticamente)
-    if (error && !cuidador) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
-                    <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-gray-800 text-center mb-2">
-                        Perfil no encontrado
-                    </h2>
-                    <p className="text-gray-600 text-center mb-6">
-                        Redirigiendo al registro...
-                    </p>
-                    <div className="flex justify-center">
-                        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     // Renderizar sección actual
     const renderSection = () => {
@@ -171,7 +122,7 @@ const CuidadorMain = () => {
                         authUser={authUser}
                         cuidador={cuidador}
                         onSolicitudesCountChange={handleActivasCountChange}
-                        onActionSuccess={handleRefreshCounters}
+                        onActionSuccess={handleRefreshCounters} // 🚀 Actualizar contadores después de acciones
                     />
                 );
             case 'historial':
