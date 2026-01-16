@@ -10,6 +10,7 @@ import BasicInfoSection from './BasicInfoSection';
 import EditableTextArea from './EditableTextArea';
 import ServicesSection from './ServicesSection';
 import RatingSection from './RatingSection';
+import CreateProfileForm from './CreateProfileForm';
 
 const CuidadorPerfil = ({ authUser, cuidador, loading, error, onEditProfile, onProfileUpdate }) => {
   const [editing, setEditing] = useState(false);
@@ -17,6 +18,7 @@ const CuidadorPerfil = ({ authUser, cuidador, loading, error, onEditProfile, onP
   const [editData, setEditData] = useState({});
   const [editErrors, setEditErrors] = useState({});
   const [apiError, setApiError] = useState(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const token = localStorage.getItem('token');
 
@@ -141,11 +143,26 @@ const CuidadorPerfil = ({ authUser, cuidador, loading, error, onEditProfile, onP
     return <LoadingState />;
   }
 
-  if (error && !cuidador && typeof error === 'string') {
-    return <ErrorState error={error} onEditProfile={onEditProfile} />;
+  // Si no hay perfil y se activó el formulario de creación
+  if (error && !cuidador && showCreateForm) {
+    return (
+      <CreateProfileForm
+        authUser={authUser}
+        onCancel={() => setShowCreateForm(false)}
+        onSuccess={() => {
+          setShowCreateForm(false);
+          onProfileUpdate();
+        }}
+      />
+    );
   }
 
-    return (
+  // Mostrar error solo si no estamos creando perfil
+  if (error && !cuidador && typeof error === 'string' && !showCreateForm) {
+    return <ErrorState error={error} onEditProfile={() => setShowCreateForm(true)} />;
+  }
+
+  return (
     <div>
       <ProfileHeader
         userName={cuidador?.nombreUsuario || authUser?.name || 'Cuidador'}
