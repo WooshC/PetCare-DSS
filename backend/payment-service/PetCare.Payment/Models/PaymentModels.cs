@@ -24,6 +24,7 @@ namespace PetCare.Payment.Models
 
     public class PaymentRequest
     {
+        public int? SolicitudID { get; set; } // ID de la solicitud de servicio
         public decimal Amount { get; set; }
         public string Currency { get; set; } = "USD";
         public string Description { get; set; } = string.Empty;

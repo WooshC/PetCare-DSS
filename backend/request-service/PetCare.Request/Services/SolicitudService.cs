@@ -277,7 +277,64 @@ namespace PetCareServicios.Services
             solicitud.FechaActualizacion = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            // Crear orden de pago automáticamente
+            try
+            {
+                await CrearOrdenPagoAsync(solicitud);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Error creando orden de pago para solicitud {id}: {ex.Message}");
+                // No fallar la finalización si el pago falla
+            }
+
             return true;
+        }
+
+        private async Task CrearOrdenPagoAsync(Solicitud solicitud)
+        {
+            try
+            {
+                // Obtener información del cuidador para calcular el monto
+                var cuidadorInfo = await GetCuidadorExtraInfo(solicitud.CuidadorID ?? 0, GetAuthTokenFromHeader());
+                if (cuidadorInfo == null)
+                {
+                    Console.WriteLine($"⚠️ No se pudo obtener información del cuidador {solicitud.CuidadorID}");
+                    return;
+                }
+
+                // Calcular monto total: horas * tarifa por hora
+                decimal montoTotal = solicitud.DuracionHoras * cuidadorInfo.TarifaPorHora;
+
+                var paymentServiceUrl = _configuration["Services:PaymentServiceUrl"] ?? "http://localhost:5045";
+                var paymentRequest = new
+                {
+                    solicitudID = solicitud.SolicitudID,
+                    amount = montoTotal,
+                    currency = "USD",
+                    description = $"Servicio de {solicitud.TipoServicio} - {solicitud.DuracionHoras}h x ${cuidadorInfo.TarifaPorHora}/h",
+                    returnUrl = $"{_configuration["Frontend:BaseUrl"]}/cliente/pagos/success",
+                    cancelUrl = $"{_configuration["Frontend:BaseUrl"]}/cliente/pagos/cancel"
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{paymentServiceUrl}/api/payment/create-order", paymentRequest);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"✅ Orden de pago creada para solicitud {solicitud.SolicitudID}: {result}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Error creando orden de pago: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Excepción creando orden de pago: {ex.Message}");
+                throw;
+            }
         }
 
         private async Task<SolicitudResponse> EnrichSolicitudWithUserInfo(SolicitudResponse response, string? authToken = null)
@@ -303,7 +360,7 @@ namespace PetCareServicios.Services
         if (response.CuidadorID.HasValue)
         {
             // Primero obtenemos info del cuidador para tener el UsuarioID correcto
-            var cuidadorExtra = await GetCuidadorExtraInfo(response.CuidadorID.Value);
+            var cuidadorExtra = await GetCuidadorExtraInfo(response.CuidadorID.Value, authToken);
             
             if (cuidadorExtra != null)
             {
@@ -354,22 +411,34 @@ namespace PetCareServicios.Services
             }
         }
 
-        private async Task<CuidadorExtraResponseDto?> GetCuidadorExtraInfo(int cuidadorId)
+        private async Task<CuidadorExtraResponseDto?> GetCuidadorExtraInfo(int cuidadorId, string? authToken = null)
 {
     try
     {
         var cuidadorServiceUrl = _configuration["Services:CuidadorServiceUrl"] ?? "http://localhost:5044";
-        var response = await _httpClient.GetAsync($"{cuidadorServiceUrl}/api/cuidador/{cuidadorId}");
+        
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{cuidadorServiceUrl}/api/cuidador/{cuidadorId}");
+        
+        if (!string.IsNullOrEmpty(authToken))
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authToken);
+        }
+        
+        var response = await _httpClient.SendAsync(request);
 
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<CuidadorExtraResponseDto>();
+            var result = await response.Content.ReadFromJsonAsync<CuidadorExtraResponseDto>();
+            Console.WriteLine($"✅ Cuidador {cuidadorId} info: TarifaPorHora = {result?.TarifaPorHora}");
+            return result;
         }
-
+        
+        Console.WriteLine($"⚠️ Error obteniendo info del cuidador {cuidadorId}: {response.StatusCode}");
         return null;
     }
-    catch
+    catch (Exception ex)
     {
+        Console.WriteLine($"❌ Excepción obteniendo info del cuidador {cuidadorId}: {ex.Message}");
         return null;
     }
 }

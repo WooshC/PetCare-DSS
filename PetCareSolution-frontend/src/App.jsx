@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import CuidadorMain from './components/cuidador/CuidadorMain';
 import './index.css';
 import ClienteMain from './components/cliente/ClienteMain';
+import PaymentSummary from './components/cliente/PaymentSummary';
 
 function App() {
   return (
@@ -15,19 +16,22 @@ function App() {
         <Routes>
           {/* Redirección automática de / a /Home */}
           <Route path="/" element={<Navigate to="/Home" replace />} />
-          
+
           {/* Ruta principal en /Home */}
           <Route path="/Home" element={<Home />} />
-          
+
           {/* Rutas de autenticación */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           {/* Rutas de Dashboard - Genérica y específicas por rol */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/cuidador/dashboard" element={<CuidadorMain />} />
           <Route path="/cliente/dashboard" element={<ClienteMain />} />
-          
+
+          {/* Ruta de pago */}
+          <Route path="/cliente/pago/:solicitudId" element={<PaymentSummary />} />
+
           {/* Ruta de fallback - redirige a /Home */}
           <Route path="*" element={<Navigate to="/Home" replace />} />
         </Routes>
