@@ -13,7 +13,7 @@ const SolicitudesHeader = ({ onOpenCreateModal }) => {
             </div>
             <button
                 onClick={onOpenCreateModal}
-                className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-2xl shadow-soft hover:shadow-medium transition-all duration-300 flex items-center font-bold text-sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl shadow-lg border-2 border-black hover:shadow-xl transition-all duration-300 flex items-center font-bold text-sm"
             >
                 <Plus className="w-4 h-4 mr-2" />
                 Nueva Solicitud

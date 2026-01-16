@@ -203,7 +203,7 @@ const SolicitudesSection = () => {
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
-                <span className="ml-3 text-slate-600 font-bold">Cargando...</span>
+                <span className="ml-3 text-slate-600 font-bold">Cargando solicitudes...</span>
             </div>
         );
     }

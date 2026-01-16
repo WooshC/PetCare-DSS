@@ -35,7 +35,7 @@ const SolicitudesList = ({
                 </p>
                 <button
                     onClick={onOpenCreateModal}
-                    className="bg-brand-500 text-white px-8 py-4 rounded-2xl hover:bg-brand-600 shadow-soft hover:shadow-medium transition-all duration-300 font-black text-sm uppercase tracking-wider"
+                    className="bg-blue-600 text-white px-8 py-4 rounded-2xl hover:bg-blue-700 shadow-lg border-2 border-black hover:shadow-xl transition-all duration-300 font-black text-sm uppercase tracking-wider"
                 >
                     Crear Mi Primera Solicitud
                 </button>

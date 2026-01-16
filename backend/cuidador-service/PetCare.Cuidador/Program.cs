@@ -120,6 +120,9 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<ICuidadorService, CuidadorService>();
 
+// Desactivar logs verbosos de HttpClient
+builder.Logging.AddFilter("System.Net.Http.HttpClient", Microsoft.Extensions.Logging.LogLevel.Warning);
+
 var app = builder.Build();
 
 // Configurar URLs para Docker
