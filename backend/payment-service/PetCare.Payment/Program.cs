@@ -59,4 +59,11 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
+// Configure URLs for Docker
+if (app.Environment.IsEnvironment("Docker"))
+{
+    app.Urls.Clear();
+    app.Urls.Add("http://0.0.0.0:8080");
+}
+
 app.Run();
