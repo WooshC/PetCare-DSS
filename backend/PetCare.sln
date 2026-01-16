@@ -3,94 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "auth-service", "auth-service", "{0034DDB9-D8DB-19F2-E616-15F2258A817C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetCare.Auth", "auth-service\PetCare.Auth\PetCare.Auth.csproj", "{47A13E3E-E6C8-4BE5-AFFB-80326318E2A0}"
-EndProject
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cuidador-service", "cuidador-service", "{64D05ED9-B888-72A8-9DBB-3E776FE11CBA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetCare.Cuidador", "cuidador-service\PetCare.Cuidador\PetCare.Cuidador.csproj", "{950BE21F-F402-4462-8632-3F7D0BB61E18}"
-EndProject
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cliente-service", "cliente-service", "{59629A42-543F-9C01-A6BA-34C6AE60393A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetCare.Cliente", "cliente-service\PetCare.Cliente\PetCare.Cliente.csproj", "{BA25C9FB-64A0-4F4B-B9BD-2426D40E7307}"
-EndProject
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "request-service", "request-service", "{ED5002D0-79A9-B79A-9917-02F69DB5E7F8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetCare.Request", "request-service\PetCare.Request\PetCare.Request.csproj", "{390167D9-9A2D-4BE9-9EE8-0202AC71D068}"
-EndProject
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "payment-service", "payment-service", "{F37F0DE2-F4B4-F57F-E9E5-D724B4368401}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetCare.Payment", "payment-service\PetCare.Payment\PetCare.Payment.csproj", "{8B6B2A6B-9D6A-49A5-9E4B-5A99E339CDB7}"
-EndProject
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "calificar-service", "calificar-service", "{4E8824D0-DD9D-BB45-E874-3D6E31E1DFDD}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetCare.Calificar", "calificar-service\PetCare.Calificar\PetCare.Calificar.csproj", "{A28151FD-40C1-4D14-A3C6-B61CFA139DE4}"
-EndProject
-
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared-kernel", "shared-kernel", "{291B3604-E95F-6FF2-91F4-60C9E63135F6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetCare.Shared", "shared-kernel\PetCare.Shared\PetCare.Shared.csproj", "{CE1ED32B-077F-4154-9B1F-A68A2EFDF138}"
-EndProject
-
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{47A13E3E-E6C8-4BE5-AFFB-80326318E2A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{47A13E3E-E6C8-4BE5-AFFB-80326318E2A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{47A13E3E-E6C8-4BE5-AFFB-80326318E2A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{47A13E3E-E6C8-4BE5-AFFB-80326318E2A0}.Release|Any CPU.Build.0 = Release|Any CPU
-
-		{950BE21F-F402-4462-8632-3F7D0BB61E18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{950BE21F-F402-4462-8632-3F7D0BB61E18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{950BE21F-F402-4462-8632-3F7D0BB61E18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{950BE21F-F402-4462-8632-3F7D0BB61E18}.Release|Any CPU.Build.0 = Release|Any CPU
-
-		{BA25C9FB-64A0-4F4B-B9BD-2426D40E7307}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA25C9FB-64A0-4F4B-B9BD-2426D40E7307}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA25C9FB-64A0-4F4B-B9BD-2426D40E7307}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA25C9FB-64A0-4F4B-B9BD-2426D40E7307}.Release|Any CPU.Build.0 = Release|Any CPU
-
-		{390167D9-9A2D-4BE9-9EE8-0202AC71D068}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{390167D9-9A2D-4BE9-9EE8-0202AC71D068}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{390167D9-9A2D-4BE9-9EE8-0202AC71D068}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{390167D9-9A2D-4BE9-9EE8-0202AC71D068}.Release|Any CPU.Build.0 = Release|Any CPU
-
-		{8B6B2A6B-9D6A-49A5-9E4B-5A99E339CDB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B6B2A6B-9D6A-49A5-9E4B-5A99E339CDB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B6B2A6B-9D6A-49A5-9E4B-5A99E339CDB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B6B2A6B-9D6A-49A5-9E4B-5A99E339CDB7}.Release|Any CPU.Build.0 = Release|Any CPU
-
-		{A28151FD-40C1-4D14-A3C6-B61CFA139DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A28151FD-40C1-4D14-A3C6-B61CFA139DE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A28151FD-40C1-4D14-A3C6-B61CFA139DE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A28151FD-40C1-4D14-A3C6-B61CFA139DE4}.Release|Any CPU.Build.0 = Release|Any CPU
-
-		{CE1ED32B-077F-4154-9B1F-A68A2EFDF138}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CE1ED32B-077F-4154-9B1F-A68A2EFDF138}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CE1ED32B-077F-4154-9B1F-A68A2EFDF138}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CE1ED32B-077F-4154-9B1F-A68A2EFDF138}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-
-	GlobalSection(NestedProjects) = preSolution
-		{47A13E3E-E6C8-4BE5-AFFB-80326318E2A0} = {0034DDB9-D8DB-19F2-E616-15F2258A817C}
-		{950BE21F-F402-4462-8632-3F7D0BB61E18} = {64D05ED9-B888-72A8-9DBB-3E776FE11CBA}
-		{BA25C9FB-64A0-4F4B-B9BD-2426D40E7307} = {59629A42-543F-9C01-A6BA-34C6AE60393A}
-		{390167D9-9A2D-4BE9-9EE8-0202AC71D068} = {ED5002D0-79A9-B79A-9917-02F69DB5E7F8}
-		{8B6B2A6B-9D6A-49A5-9E4B-5A99E339CDB7} = {F37F0DE2-F4B4-F57F-E9E5-D724B4368401}
-		{A28151FD-40C1-4D14-A3C6-B61CFA139DE4} = {4E8824D0-DD9D-BB45-E874-3D6E31E1DFDD}
-		{CE1ED32B-077F-4154-9B1F-A68A2EFDF138} = {291B3604-E95F-6FF2-91F4-60C9E63135F6}
 	EndGlobalSection
 EndGlobal
