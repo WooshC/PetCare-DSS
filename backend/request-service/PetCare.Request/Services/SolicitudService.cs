@@ -106,6 +106,14 @@ namespace PetCareServicios.Services
 
        public async Task<SolicitudResponse> CreateSolicitudAsync(int usuarioId, SolicitudRequest request, string? authToken = null)
 {
+    var pendingObligations = await _context.Solicitudes
+        .AnyAsync(s => s.ClienteID == usuarioId && s.Estado == "Finalizada" && (!s.IsPaid || !s.IsRated));
+
+    if (pendingObligations)
+    {
+        throw new InvalidOperationException("No puedes crear una nueva solicitud porque tienes servicios finalizados pendientes de pago o calificación.");
+    }
+
     var solicitud = new Solicitud
     {
         ClienteID = usuarioId,
@@ -452,6 +460,28 @@ namespace PetCareServicios.Services
                 return authHeader.Substring("Bearer ".Length);
             }
             return null;
+        }
+
+        public async Task<bool> MarkAsPaidAsync(int id)
+        {
+            var solicitud = await _context.Solicitudes.FindAsync(id);
+            if (solicitud == null) return false;
+
+            solicitud.IsPaid = true;
+            solicitud.FechaActualizacion = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> MarkAsRatedAsync(int id)
+        {
+            var solicitud = await _context.Solicitudes.FindAsync(id);
+            if (solicitud == null) return false;
+
+            solicitud.IsRated = true;
+            solicitud.FechaActualizacion = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private async Task<bool> ValidarCuidadorExisteAsync(int cuidadorId, string? authToken = null)

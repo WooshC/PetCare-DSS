@@ -34,6 +34,8 @@ export class Solicitud {
     this.fechaAceptacion = data.fechaAceptacion || null;
     this.fechaInicioServicio = data.fechaInicioServicio || null;
     this.fechaFinalizacion = data.fechaFinalizacion || null;
+    this.isPaid = data.isPaid || false;
+    this.isRated = data.isRated || false;
   }
 }
 

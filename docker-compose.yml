@@ -1,0 +1,131 @@
+services:
+  # Databases
+  db-auth:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "14331:1433"
+
+  db-cliente:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "14332:1433"
+
+  db-cuidador:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "14333:1433"
+
+  db-request:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "14334:1433"
+
+  db-payment:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "14335:1433"
+
+  db-calificar:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "14336:1433"
+
+  # Backend Services
+  petcare-auth:
+    build:
+      context: ./backend
+      dockerfile: auth-service/PetCare.Auth/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    ports:
+      - "5043:8080"
+    depends_on:
+      - db-auth
+
+  petcare-cliente:
+    build:
+      context: ./backend
+      dockerfile: cliente-service/PetCare.Cliente/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    ports:
+      - "5045:8080"
+    depends_on:
+      - db-cliente
+
+  petcare-cuidador:
+    build:
+      context: ./backend
+      dockerfile: cuidador-service/PetCare.Cuidador/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    ports:
+      - "5044:8080"
+    depends_on:
+      - db-cuidador
+
+  petcare-request:
+    build:
+      context: ./backend
+      dockerfile: request-service/PetCare.Request/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    ports:
+      - "5050:8080"
+    depends_on:
+      - db-request
+
+  petcare-payment:
+    build:
+      context: ./backend
+      dockerfile: payment-service/PetCare.Payment/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    ports:
+      - "5012:8080"
+    depends_on:
+      - db-payment
+
+  petcare-calificar:
+    build:
+      context: ./backend
+      dockerfile: calificar-servicie/PetCare.Calificar/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    ports:
+      - "5075:8080"
+    depends_on:
+      - db-calificar
+
+  # Frontend
+  petcare-frontend:
+    build:
+      context: ./PetCareSolution-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - petcare-auth
+      - petcare-cliente
+      - petcare-cuidador
+      - petcare-request
+      - petcare-payment
+      - petcare-calificar

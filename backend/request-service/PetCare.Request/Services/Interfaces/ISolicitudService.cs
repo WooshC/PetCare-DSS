@@ -22,5 +22,8 @@ namespace PetCareServicios.Services.Interfaces
         Task<bool> RechazarSolicitudAsync(int id);
         Task<bool> IniciarServicioAsync(int id);
         Task<bool> FinalizarServicioAsync(int id);
+        
+        Task<bool> MarkAsPaidAsync(int id);
+        Task<bool> MarkAsRatedAsync(int id);
     }
 }

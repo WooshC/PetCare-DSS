@@ -6,6 +6,7 @@ import {
     CreditCard, ArrowLeft, Receipt, Star
 } from 'lucide-react';
 import { clienteSolicitudService } from '../../services/api/clienteSolicitudAPI';
+import { paymentService } from '../../services/api/paymentAPI';
 
 const PaymentSummary = () => {
     const { solicitudId } = useParams();
@@ -50,11 +51,38 @@ const PaymentSummary = () => {
 
     const handlePayment = async () => {
         setProcessingPayment(true);
-        // Aquí se integrará con PayPal o el método de pago
-        setTimeout(() => {
-            alert('Pago procesado exitosamente!');
-            navigate('/cliente/historial');
-        }, 2000);
+        try {
+            const totalAmount = calculateTotal();
+            const paymentRequest = {
+                SolicitudID: solicitud.solicitudID,
+                Amount: totalAmount,
+                Currency: "USD",
+                Description: `Pago por servicio de cuidado de mascotas #${solicitud.solicitudID}`,
+                ReturnUrl: `${window.location.origin}/cliente/pago-exitoso?solicitudId=${solicitud.solicitudID}`,
+                CancelUrl: `${window.location.origin}/cliente/pago/${solicitudId}`
+            };
+
+            const response = await paymentService.createOrder(paymentRequest);
+
+            // Buscar el link "approve"
+            // The response might be the object directly if parsed, or contain 'links'.
+            // Based on PayPal API v2, the response has a 'links' array.
+
+            const links = response.links || [];
+            const approveLink = links.find(link => link.rel === "approve");
+
+            if (approveLink) {
+                window.location.href = approveLink.href;
+            } else {
+                console.error("PayPal response:", response);
+                throw new Error("No se encontró el enlace de aprobación de PayPal en la respuesta");
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert("Error al iniciar el pago: " + (err.message || "Error desconocido"));
+            setProcessingPayment(false);
+        }
     };
 
     const formatDate = (dateString) => {

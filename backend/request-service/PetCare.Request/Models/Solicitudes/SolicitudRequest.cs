@@ -43,6 +43,8 @@ namespace PetCareServicios.Models.Solicitudes
     public DateTime? FechaAceptacion { get; set; }
     public DateTime? FechaInicioServicio { get; set; }
     public DateTime? FechaFinalizacion { get; set; }
+    public bool IsPaid { get; set; }
+    public bool IsRated { get; set; }
 
     // Información del cliente (desde Auth)
     public string NombreCliente { get; set; } = string.Empty;
