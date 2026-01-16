@@ -73,8 +73,9 @@ namespace PetCareServicios.Controllers
                 return BadRequest($"El cuidador no está disponible. Estado actual: {cuidador.Estado}");
 
             // Opcional: Validar que tenga documento verificado
-            if (!cuidador.DocumentoVerificado)
-                return BadRequest("El cuidador no tiene documento verificado");
+            // COMENTADO: Permitir cuidadores sin documento verificado
+            // if (!cuidador.DocumentoVerificado)
+            //     return BadRequest("El cuidador no tiene documento verificado");
 
             return Ok(cuidador);
         }
