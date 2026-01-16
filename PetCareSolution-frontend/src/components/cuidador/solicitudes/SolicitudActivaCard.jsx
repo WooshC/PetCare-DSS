@@ -74,7 +74,7 @@ const SolicitudActivaCard = ({
                 <button
                   onClick={() => handleIniciar(solicitud.solicitudID)}
                   disabled={isActionLoading}
-                  className="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-brand-100 disabled:opacity-50 flex items-center"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-blue-200 disabled:opacity-50 flex items-center"
                 >
                   {isActionLoading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" /> : <Play className="w-4 h-4 mr-2" />}
                   Iniciar Servicio
