@@ -1,6 +1,6 @@
 // src/components/common/PerfilUsuario.jsx
 import React from 'react';
-import { Mail, Phone, Shield, Star, User, Heart, PawPrint, BadgeCheck } from 'lucide-react';
+import { Mail, Phone, Shield, Star, User, Heart, PawPrint, BadgeCheck, Clock } from 'lucide-react';
 
 const PerfilUsuario = ({
   usuario,
