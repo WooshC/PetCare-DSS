@@ -78,12 +78,13 @@ namespace PetCareServicios.Models.Solicitudes
     public string Telefono { get; set; } = string.Empty;
 }
 
-public class CuidadorExtraResponseDto
-{
-    public int CuidadorID { get; set; }
-    public string Biografia { get; set; } = string.Empty;
-    public decimal TarifaPorHora { get; set; }
-    public double CalificacionPromedio { get; set; }
-}
+    public class CuidadorExtraResponseDto
+    {
+        public int CuidadorID { get; set; }
+        public int UsuarioID { get; set; } // Add this
+        public string Biografia { get; set; } = string.Empty;
+        public decimal TarifaPorHora { get; set; }
+        public double CalificacionPromedio { get; set; }
+    }
 
 } 

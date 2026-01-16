@@ -46,7 +46,7 @@ export const combinedService = {
     try {
       // 1. Obtener lista de cuidadores
       const cuidadoresResponse = await caregiverApi.get('/');
-      const cuidadores = Array.isArray(cuidadoresResponse.data) 
+      const cuidadores = Array.isArray(cuidadoresResponse.data)
         ? cuidadoresResponse.data.map(c => new CuidadorResponse(c))
         : [];
 
@@ -56,23 +56,23 @@ export const combinedService = {
 
       // 3. Combinar la información
       const cuidadoresCompletos = cuidadores.map(cuidador => {
-        // Buscar el usuario correspondiente por usuarioID
-        const usuario = usuarios.find(u => u.id === cuidador.usuarioID);
-        
+        // Buscar el usuario correspondiente por usuarioID (soportar tanto id como identificador)
+        const usuario = usuarios.find(u => (u.id || u.identificador) == cuidador.usuarioID);
+
         return new CuidadorResponse({
           ...cuidador,
-          nombreUsuario: usuario?.name || 'Cuidador',
-          emailUsuario: usuario?.email || '',
-          telefonoUsuario: usuario?.phoneNumber || ''
+          nombreUsuario: usuario?.name || usuario?.nombre || 'Cuidador',
+          emailUsuario: usuario?.email || usuario?.correo || '',
+          telefonoUsuario: usuario?.phoneNumber || usuario?.telefono || ''
         });
       });
 
       return cuidadoresCompletos;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al obtener cuidadores con información de usuario';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al obtener cuidadores con información de usuario';
       throw new Error(errorMessage);
     }
   },
@@ -96,10 +96,10 @@ export const combinedService = {
         telefonoUsuario: usuario?.phoneNumber || ''
       });
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al obtener el cuidador completo';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al obtener el cuidador completo';
       throw new Error(errorMessage);
     }
   }

@@ -302,19 +302,22 @@ namespace PetCareServicios.Services
         // Cuidador (Auth + Cuidador Service)
         if (response.CuidadorID.HasValue)
         {
-            var cuidadorAuth = await GetUserInfo(response.CuidadorID.Value, authToken);
-            if (cuidadorAuth != null)
-            {
-                response.NombreCuidador = cuidadorAuth.Name;
-                response.EmailCuidador = cuidadorAuth.Email;
-                response.TelefonoCuidador = cuidadorAuth.PhoneNumber ?? string.Empty;
-            }
-
+            // Primero obtenemos info del cuidador para tener el UsuarioID correcto
             var cuidadorExtra = await GetCuidadorExtraInfo(response.CuidadorID.Value);
+            
             if (cuidadorExtra != null)
             {
                 response.TarifaPorHora = cuidadorExtra.TarifaPorHora;
                 response.CalificacionPromedio = cuidadorExtra.CalificacionPromedio;
+                
+                // Ahora usamos el UsuarioID correcto para obtener datos de Auth
+                var cuidadorAuth = await GetUserInfo(cuidadorExtra.UsuarioID, authToken);
+                if (cuidadorAuth != null)
+                {
+                    response.NombreCuidador = cuidadorAuth.Name;
+                    response.EmailCuidador = cuidadorAuth.Email;
+                    response.TelefonoCuidador = cuidadorAuth.PhoneNumber ?? string.Empty;
+                }
             }
         }
 
