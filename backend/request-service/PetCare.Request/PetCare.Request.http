@@ -1,0 +1,218 @@
+@PetCare.Request_HostAddress = http://localhost:5128
+
+# ===== ENDPOINTS GENERALES =====
+
+### Test endpoint
+GET {{PetCare.Request_HostAddress}}/api/solicitud/test
+Accept: application/json
+
+###
+
+### Debug token (para verificar información del usuario)
+GET {{PetCare.Request_HostAddress}}/api/solicitud/debug-token
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Debug cuidador (para verificar validación)
+GET {{PetCare.Request_HostAddress}}/api/solicitud/debug-cuidador/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+# ===== ENDPOINTS ADMINISTRATIVOS =====
+
+### Obtener todas las solicitudes (Admin)
+GET {{PetCare.Request_HostAddress}}/api/solicitud
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Obtener solicitud por ID (General)
+GET {{PetCare.Request_HostAddress}}/api/solicitud/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Obtener solicitudes por cliente (Admin)
+GET {{PetCare.Request_HostAddress}}/api/solicitud/cliente/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Obtener solicitudes por cuidador (Admin)
+GET {{PetCare.Request_HostAddress}}/api/solicitud/cuidador/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Obtener solicitudes por estado (Admin)
+GET {{PetCare.Request_HostAddress}}/api/solicitud/estado/Pendiente
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Asignar cuidador (Admin)
+PUT {{PetCare.Request_HostAddress}}/api/solicitud/1/asignar-cuidador
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "cuidadorID": 1
+}
+
+###
+
+### Cambiar estado (Admin)
+PUT {{PetCare.Request_HostAddress}}/api/solicitud/1/estado
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "estado": "Aceptada"
+}
+
+###
+
+### Cancelar solicitud (Admin/Cliente)
+POST {{PetCare.Request_HostAddress}}/api/solicitud/1/cancelar
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+# ===== ENDPOINTS DE CLIENTE =====
+
+### Consultar cuidadores disponibles (Cuidador Service) - Requiere Auth
+GET http://localhost:5044/api/cuidador
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Ver detalles de un cuidador específico (Cuidador Service) - Requiere Auth
+GET http://localhost:5044/api/cuidador/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Obtener mis solicitudes (Cliente)
+GET {{PetCare.Request_HostAddress}}/api/solicitudcliente/mis-solicitudes
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Obtener solicitud específica (Cliente)
+GET {{PetCare.Request_HostAddress}}/api/solicitudcliente/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Crear nueva solicitud (Cliente)
+POST {{PetCare.Request_HostAddress}}/api/solicitudcliente
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "tipoServicio": "Paseo",
+  "descripcion": "Necesito que alguien pasee a mi perro por 2 horas",
+  "fechaHoraInicio": "2024-01-15T10:00:00Z",
+  "duracionHoras": 2,
+  "ubicacion": "Parque Central, Ciudad"
+}
+
+###
+
+### Actualizar solicitud (Cliente)
+PUT {{PetCare.Request_HostAddress}}/api/solicitudcliente/1
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "tipoServicio": "Guardería",
+  "descripcion": "Necesito guardería para mi gato por 4 horas",
+  "fechaHoraInicio": "2024-01-15T14:00:00Z",
+  "duracionHoras": 4,
+  "ubicacion": "Mi casa, Calle Principal 123"
+}
+
+###
+
+### Asignar cuidador (Cliente)
+PUT {{PetCare.Request_HostAddress}}/api/solicitudcliente/1/asignar-cuidador
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "cuidadorID": 1
+}
+
+###
+
+### Cancelar solicitud (Cliente)
+POST {{PetCare.Request_HostAddress}}/api/solicitudcliente/1/cancelar
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Eliminar solicitud (Cliente)
+DELETE {{PetCare.Request_HostAddress}}/api/solicitudcliente/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+# ===== ENDPOINTS DE CUIDADOR =====
+
+### Obtener mis solicitudes (Cuidador)
+GET {{PetCare.Request_HostAddress}}/api/solicitudcuidador/mis-solicitudes
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Obtener solicitud específica (Cuidador)
+GET {{PetCare.Request_HostAddress}}/api/solicitudcuidador/1
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Aceptar solicitud (Cuidador)
+POST {{PetCare.Request_HostAddress}}/api/solicitudcuidador/1/aceptar
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Rechazar solicitud (Cuidador)
+POST {{PetCare.Request_HostAddress}}/api/solicitudcuidador/1/rechazar
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Iniciar servicio (Cuidador)
+POST {{PetCare.Request_HostAddress}}/api/solicitudcuidador/1/iniciar-servicio
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
+
+### Finalizar servicio (Cuidador)
+POST {{PetCare.Request_HostAddress}}/api/solicitudcuidador/1/finalizar-servicio
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+###
