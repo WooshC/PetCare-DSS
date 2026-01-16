@@ -38,11 +38,8 @@ export const solicitudService = {
   // Obtener solicitudes del cuidador autenticado - CORREGIDO EL ENDPOINT
   getMisSolicitudesPendientes: async () => {
     try {
-      console.log('Obteniendo solicitudes del cuidador...');
-      
       // URL CORREGIDA: /SolicitudCuidador/mis-solicitudes (con "d" y mayúscula)
       const response = await cuidadorApi.get('/SolicitudCuidador/mis-solicitudes');
-      console.log('Respuesta recibida:', response.data);
       
       // Mapear la respuesta a nuestro modelo
       const solicitudes = Array.isArray(response.data) 
@@ -55,7 +52,6 @@ export const solicitudService = {
         s.estado?.toLowerCase() === 'asignada'
       );
       
-      console.log('Solicitudes pendientes filtradas:', solicitudesPendientes);
       return solicitudesPendientes;
     } catch (error) {
       console.error('Error detallado al obtener solicitudes:', error);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PetCareServicios.Models.Cuidadores;
 using PetCareServicios.Services.Interfaces;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace PetCareServicios.Controllers
 {
@@ -95,8 +96,11 @@ namespace PetCareServicios.Controllers
             if (usuarioId == null)
                 return Unauthorized();
 
+            // Extraer el token del header Authorization
+            var token = ExtractTokenFromHeader();
+
             // Buscar perfil de cuidador asociado al usuario
-            var cuidador = await _cuidadorService.GetCuidadorByUsuarioIdAsync(usuarioId.Value);
+            var cuidador = await _cuidadorService.GetCuidadorByUsuarioIdAsync(usuarioId.Value, token);
             if (cuidador == null)
                 return NotFound("No tienes un perfil de cuidador");
 
@@ -267,11 +271,38 @@ namespace PetCareServicios.Controllers
         /// <returns>ID del usuario o null si no se puede extraer</returns>
         private int? GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            // Buscar primero en JwtRegisteredClaimNames.Sub (estándar JWT)
+            var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+            
+            // Si no está, buscar en ClaimTypes.NameIdentifier (alternativo)
+            if (userIdClaim == null)
+            {
+                userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            }
+            
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
                 return null;
 
             return userId;
         }
+
+        /// <summary>
+        /// Extrae el token JWT del header Authorization del request actual
+        /// </summary>
+        /// <returns>Token sin el prefijo "Bearer " o null si no está presente</returns>
+        private string? ExtractTokenFromHeader()
+        {
+            var authHeader = Request.Headers["Authorization"].ToString();
+            if (string.IsNullOrEmpty(authHeader))
+                return null;
+
+            const string bearerScheme = "Bearer ";
+            if (authHeader.StartsWith(bearerScheme, StringComparison.OrdinalIgnoreCase))
+            {
+                return authHeader.Substring(bearerScheme.Length);
+            }
+
+            return null;
+        }
     }
-} 
+}

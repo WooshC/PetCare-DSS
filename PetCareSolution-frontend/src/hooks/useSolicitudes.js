@@ -14,9 +14,7 @@ export const useSolicitudes = () => {
       setLoading(true);
       setError(null);
 
-      console.log('Iniciando carga de solicitudes...');
       const data = await solicitudService.getMisSolicitudesPendientes();
-      console.log('Datos cargados:', data);
 
       setSolicitudesPendientes(data);
       return data;

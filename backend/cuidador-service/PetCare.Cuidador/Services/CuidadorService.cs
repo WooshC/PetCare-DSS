@@ -13,6 +13,7 @@ namespace PetCareServicios.Services
         private readonly IMapper _mapper;
         private readonly HttpClient _httpClient;
         private readonly string _ratingsServiceUrl;
+        private readonly string _authServiceUrl;
 
         public CuidadorService(
             CuidadorDbContext context, 
@@ -24,6 +25,7 @@ namespace PetCareServicios.Services
             _mapper = mapper;
             _httpClient = httpClient;
             _ratingsServiceUrl = configuration["Services:RatingsServiceUrl"] ?? "http://localhost:5075/api/ratings";
+            _authServiceUrl = configuration["Services:AuthServiceUrl"] ?? "http://localhost:5043/api/auth";
         }
 
         public async Task<List<CuidadorResponse>> GetAllCuidadoresAsync()
@@ -32,13 +34,21 @@ namespace PetCareServicios.Services
                 .Where(c => c.Estado == "Activo")
                 .ToListAsync();
 
-            // Sincronizar calificaciones para todos los cuidadores activos
+            var responses = _mapper.Map<List<CuidadorResponse>>(cuidadores);
+
+            // Sincronizar calificaciones y enriquecer con datos del usuario para todos los cuidadores activos
             foreach (var cuidador in cuidadores)
             {
                 await SyncRatingAsync(cuidador);
             }
+            
+            // Enriquecer cada respuesta con datos del usuario (sin token para listado público)
+            foreach (var response in responses)
+            {
+                await EnriquecerConDatosDelUsuarioAsync(response, null);
+            }
 
-            return _mapper.Map<List<CuidadorResponse>>(cuidadores);
+            return responses;
         }
 
         public async Task<CuidadorResponse?> GetCuidadorByIdAsync(int id)
@@ -50,12 +60,20 @@ namespace PetCareServicios.Services
             {
                 // Sincronizar calificación bajo demanda
                 await SyncRatingAsync(cuidador);
+                
+                // Mapear a response
+                var response = _mapper.Map<CuidadorResponse>(cuidador);
+                
+                // Obtener datos del usuario desde auth-service (sin token)
+                await EnriquecerConDatosDelUsuarioAsync(response, null);
+                
+                return response;
             }
 
-            return _mapper.Map<CuidadorResponse>(cuidador);
+            return null;
         }
 
-        public async Task<CuidadorResponse?> GetCuidadorByUsuarioIdAsync(int usuarioId)
+        public async Task<CuidadorResponse?> GetCuidadorByUsuarioIdAsync(int usuarioId, string? token = null)
         {
             var cuidador = await _context.Cuidadores
                 .FirstOrDefaultAsync(c => c.UsuarioID == usuarioId && c.Estado == "Activo");
@@ -64,9 +82,17 @@ namespace PetCareServicios.Services
             {
                 // Sincronizar calificación bajo demanda
                 await SyncRatingAsync(cuidador);
+                
+                // Mapear a response
+                var response = _mapper.Map<CuidadorResponse>(cuidador);
+                
+                // Obtener datos del usuario desde auth-service con token si está disponible
+                await EnriquecerConDatosDelUsuarioAsync(response, token);
+                
+                return response;
             }
 
-            return _mapper.Map<CuidadorResponse>(cuidador);
+            return null;
         }
 
         public async Task<CuidadorResponse> CreateCuidadorAsync(int usuarioId, CuidadorRequest request)
@@ -219,6 +245,64 @@ namespace PetCareServicios.Services
                 // Si el servicio de ratings está caído, fallamos silenciosamente usando el caché local
                 Console.WriteLine($"⚠️ No se pudo sincronizar rating para Cuidador {cuidador.CuidadorID}: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Enriquece la respuesta de cuidador con datos del usuario desde auth-service
+        /// </summary>
+        private async Task EnriquecerConDatosDelUsuarioAsync(CuidadorResponse cuidadorResponse, string? token = null)
+        {
+            try
+            {
+                // Llamar a auth-service para obtener datos del usuario
+                var url = $"{_authServiceUrl}/users/{cuidadorResponse.UsuarioID}";
+                Console.WriteLine($"🔗 Obteniendo datos del usuario desde: {url}");
+                
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                
+                // Si tenemos token, lo pasamos en el header Authorization
+                if (!string.IsNullOrEmpty(token))
+                {
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    Console.WriteLine($"🔐 Usando token para autenticación");
+                }
+                
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var userInfo = await response.Content.ReadFromJsonAsync<UserInfoDto>();
+                    
+                    if (userInfo != null)
+                    {
+                        cuidadorResponse.NombreUsuario = userInfo.Name ?? string.Empty;
+                        cuidadorResponse.EmailUsuario = userInfo.Email ?? string.Empty;
+                        cuidadorResponse.TelefonoUsuario = userInfo.PhoneNumber ?? string.Empty;
+                        Console.WriteLine($"✅ Datos del usuario enriquecidos: {userInfo.Name} ({userInfo.Email}) - Tel: {userInfo.PhoneNumber}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"⚠️ Auth-service respondió con status {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Si auth-service no responde, usamos valores por defecto
+                Console.WriteLine($"❌ Error al obtener datos del usuario desde auth-service: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// DTO para recibir datos del usuario desde auth-service
+        /// </summary>
+        private class UserInfoDto
+        {
+            public int Id { get; set; }
+            public string? Name { get; set; }
+            public string? Email { get; set; }
+            public string? PhoneNumber { get; set; }
+            public string? UserName { get; set; }
         }
     }
 }

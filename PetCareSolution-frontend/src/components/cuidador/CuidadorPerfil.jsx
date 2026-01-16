@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { caregiverService } from '../../services/api/caregiverAPI';
 import { CuidadorRequest } from '../../models/Cuidador';
+import { PawPrint } from 'lucide-react';
 
 // Importar componentes
 import ProfileHeader from './ProfileHeader';
@@ -144,10 +145,10 @@ const CuidadorPerfil = ({ authUser, cuidador, loading, error, onEditProfile, onP
     return <ErrorState error={error} onEditProfile={onEditProfile} />;
   }
 
-  return (
+    return (
     <div>
       <ProfileHeader
-        userName={authUser?.name || 'Cuidador'}
+        userName={cuidador?.nombreUsuario || authUser?.name || 'Cuidador'}
         editing={editing}
         saving={saving}
         onEditStart={handleEditStart}

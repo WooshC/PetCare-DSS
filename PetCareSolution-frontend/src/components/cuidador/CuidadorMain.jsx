@@ -42,8 +42,6 @@ const CuidadorMain = () => {
 
             setAsignadasCount(asignadas);
             setActivasCount(activas);
-
-            console.log('Contadores actualizados:', { asignadas, activas });
         } catch (error) {
             console.error('Error cargando contadores:', error);
             // Valores por defecto en caso de error
@@ -60,7 +58,6 @@ const CuidadorMain = () => {
 
         // Polling cada 30 segundos para actualización dinámica
         const intervalId = setInterval(() => {
-            console.log('Actualizando contadores automáticamente...');
             loadCounters();
         }, 30000); // 30 segundos
 
@@ -68,7 +65,7 @@ const CuidadorMain = () => {
     }, [refreshTrigger]);
 
     const handleEditProfile = () => {
-        console.log('Abrir edición de perfil');
+        // Abrir edición de perfil
     };
 
     const handleProfileUpdate = () => {

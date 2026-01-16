@@ -8,41 +8,41 @@ export const useCuidador = (token) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchCuidadorProfile = async () => {
-      // Verificar si hay token antes de hacer la llamada
-      if (!token) {
-        setLoading(false);
-        setError('No hay token disponible');
-        return;
-      }
+  const fetchCuidadorProfile = async (currentToken) => {
+    // Verificar si hay token antes de hacer la llamada
+    if (!currentToken) {
+      setLoading(false);
+      setError('No hay token disponible');
+      return;
+    }
 
-      try {
-        const response = await caregiverService.getProfile(token);
-        
-        if (response.success && response.data) {
-          setCuidador(new CuidadorResponse(response.data));
-          setError(null);
-        } else {
-          setError(response.error || 'No se encontró perfil de cuidador');
-          setCuidador(null);
-        }
-      } catch (error) {
-        setError(error.message || 'Error al cargar el perfil');
+    try {
+      const response = await caregiverService.getProfile(currentToken);
+      
+      if (response.success && response.data) {
+        setCuidador(new CuidadorResponse(response.data));
+        setError(null);
+      } else {
+        setError(response.error || 'No se encontró perfil de cuidador');
         setCuidador(null);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      setError(error.message || 'Error al cargar el perfil');
+      setCuidador(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchCuidadorProfile();
+  useEffect(() => {
+    fetchCuidadorProfile(token);
   }, [token]);
 
   const refetch = () => {
     const currentToken = localStorage.getItem('token');
     if (currentToken) {
       setLoading(true);
-      fetchCuidadorProfile();
+      fetchCuidadorProfile(currentToken);
     }
   };
 

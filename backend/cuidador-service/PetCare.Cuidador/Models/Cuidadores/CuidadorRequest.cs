@@ -46,5 +46,6 @@ namespace PetCareServicios.Models.Cuidadores
         public string Estado { get; set; } = string.Empty;
         public string NombreUsuario { get; set; } = string.Empty;
         public string EmailUsuario { get; set; } = string.Empty;
+        public string TelefonoUsuario { get; set; } = string.Empty;
     }
 } 

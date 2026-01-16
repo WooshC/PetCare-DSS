@@ -43,7 +43,7 @@ const BasicInfoSection = ({
       <div className="grid grid-cols-1 md:grid-cols-2 divide-x divide-y divide-slate-50">
         <InfoBox
           label="Teléfono Principal"
-          value={formatPhone(authUser?.phoneNumber || '')}
+          value={formatPhone(cuidador?.telefonoUsuario || authUser?.phoneNumber || '')}
           icon={Phone}
           subtext="Vinculado a tu cuenta"
         />
@@ -80,7 +80,7 @@ const BasicInfoSection = ({
 
         <InfoBox
           label="Correo Electrónico"
-          value={authUser?.email}
+          value={cuidador?.emailUsuario || authUser?.email}
           icon={Mail}
           subtext="Correo institucional"
         />

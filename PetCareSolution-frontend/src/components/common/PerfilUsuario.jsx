@@ -31,10 +31,12 @@ const PerfilUsuario = ({
 
   const user = getCurrentUser();
 
+  // Priorizar datos del usuario que vienen de la API (cuidador.nombreUsuario, cuidador.emailUsuario)
+  // Si no están disponibles, usar los de localStorage
   const userData = {
-    nombreUsuario: user.name,
-    email: user.email,
-    phoneNumber: user.phoneNumber,
+    nombreUsuario: usuario?.nombreUsuario || usuario?.name || user.name || '',
+    email: usuario?.emailUsuario || usuario?.email || user.email || '',
+    phoneNumber: usuario?.telefonoUsuario || user.phoneNumber || '',
     ...usuario
   };
 
@@ -92,7 +94,7 @@ const PerfilUsuario = ({
       {/* User Branding */}
       <div className="relative z-10">
         <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-1">
-          {user.name || userData.nombreUsuario || config.texto}
+          {userData.nombreUsuario || user.name || config.texto}
         </h3>
 
         <div className="flex justify-center mb-6">
@@ -107,19 +109,32 @@ const PerfilUsuario = ({
         {/* Email */}
         <div className="flex items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 group/item hover:bg-white hover:border-brand-200 transition-all">
           <Mail className="h-4 w-4 mr-3 text-slate-400 group-hover/item:text-brand-500 transition-colors" />
-          <span className="text-slate-600 text-sm font-bold">{user.email || userData.email || 'No disponible'}</span>
+          <span className="text-slate-600 text-sm font-bold">{userData.emailUsuario || userData.email || user.email || 'No especificado'}</span>
+        </div>
+
+        {/* Teléfono Principal */}
+        {(userData.phoneNumber || user.phoneNumber) && (
+          <div className="flex items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 group/item hover:bg-white hover:border-brand-200 transition-all">
+            <Phone className="h-4 w-4 mr-3 text-slate-400 group-hover/item:text-brand-500 transition-colors" />
+            <span className="text-slate-600 text-sm font-bold">{userData.phoneNumber || user.phoneNumber || 'No especificado'}</span>
+          </div>
+        )}
+
+        {/* Correo institucional */}
+        <div className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          {user.email ? '📧 Correo institucional' : ''}
         </div>
 
         {/* Stats Section if enabled */}
         {showStats && (
           <div className="grid grid-cols-2 gap-3 py-4">
             <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Finalizados</p>
-              <p className="text-xl font-black text-slate-800">{stats.finalizadas || 0}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Asignadas</p>
+              <p className="text-xl font-black text-slate-800">{stats.asignadas || 0}</p>
             </div>
             <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total</p>
-              <p className="text-xl font-black text-slate-800">{stats.total || 0}</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Activas</p>
+              <p className="text-xl font-black text-slate-800">{stats.activas || stats.aceptadas || 0}</p>
             </div>
           </div>
         )}
@@ -141,20 +156,13 @@ const PerfilUsuario = ({
         )}
 
         {/* Phones */}
-        {(user.phoneNumber || userData.telefonoEmergencia) && (
-          <div className="flex flex-col space-y-2 pt-2">
-            {user.phoneNumber && (
-              <div className="flex items-center justify-center text-slate-500 text-sm font-medium">
-                <Phone className="h-3.5 w-3.5 mr-2 text-slate-400" />
-                {user.phoneNumber}
-              </div>
-            )}
-            {userData.telefonoEmergencia && (
-              <div className="flex items-center justify-center text-slate-400 text-xs font-medium italic">
-                <Shield className="h-3 w-3 mr-2" />
-                Emergencia: {userData.telefonoEmergencia}
-              </div>
-            )}
+        {userData.telefonoEmergencia && (
+          <div className="flex items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 group/item hover:bg-white hover:border-amber-200 transition-all">
+            <Shield className="h-4 w-4 mr-3 text-amber-400 group-hover/item:text-amber-600 transition-colors" />
+            <div className="text-center">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Teléfono de Emergencia</span>
+              <span className="text-slate-600 text-sm font-bold">{userData.telefonoEmergencia}</span>
+            </div>
           </div>
         )}
       </div>
