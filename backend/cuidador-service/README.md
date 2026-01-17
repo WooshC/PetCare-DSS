@@ -32,8 +32,8 @@ graph TD
 
     Repo -->|SQL| DB[(PostgreSQL: CuidadorDB)]:::db
     ApiClients -->|HTTP| AuthService[Auth Service]:::external
-    ApiClients -.->|HTTP (Opcional)| RatingService[Rating Service]:::external
-    
+    ApiClients -.->|"HTTP (Opcional)"| RatingService[Rating Service]:::external
+
     %% Notas
     note left of Service
         Responsabilidades:
