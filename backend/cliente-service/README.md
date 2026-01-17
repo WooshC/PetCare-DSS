@@ -32,24 +32,22 @@ graph TD
     Repo -->|SQL| DB
     AuthClient -->|"HTTP REST"| AuthService
 
-    %% Notas
-    note right of Service
-        Lógica de negocio:
-        - Gestión de perfiles
-        - Validación de documentos
-        - Fusión de datos (Auth + Cliente)
-    end note
+    %% Nota como nodo
+    ServiceNote["📝 Lógica de negocio:<br/>- Gestión de perfiles<br/>- Validación de documentos<br/>- Fusión de datos (Auth + Cliente)"]
+    Service -.->|Implementa| ServiceNote
 
     %% Estilos
     classDef component fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
     classDef db fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
+    classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5,color:#333
 
     class Service,Repo,AuthClient component
     class DB db
     class AuthService external
     class Controller api
+    class ServiceNote note
 ```
 
 ### Nivel 4: Diagrama de Código (Clases Principales)
