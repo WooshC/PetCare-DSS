@@ -207,33 +207,67 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine($"❌ Error al crear roles: {ex.Message}");
         }
 
-        // Crear tenants por defecto si no existen
+        // Seed Inicial: Crear Admin por defecto para petcare-ecuador
         try
         {
-            Console.WriteLine("🏢 Creando tenants por defecto...");
+            Console.WriteLine("🏢 Verificando Admin inicial para 'petcare-ecuador'...");
             var userManager = services.GetRequiredService<UserManager<User>>();
             
-            var tenants = new[] { "petcare-admin", "petcare-cliente", "petcare-cuidador" };
+            string adminEmail = "admin@petcare.ec";
+            var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
             
-            foreach (var tenant in tenants)
+            if (existingAdmin == null)
             {
-                // Verificar si ya existe al menos un usuario en el tenant
-                var usuarioEnTenant = await userManager.Users
-                    .FirstOrDefaultAsync(u => u.IdentificadorArrendador == tenant);
-                
-                if (usuarioEnTenant == null)
+                Console.WriteLine("👤 Creando usuario Admin inicial...");
+                var newAdmin = new User
                 {
-                    Console.WriteLine($"✅ Tenant '{tenant}' está listo para bootstrap (ejecuta: POST /api/admin/bootstrap)");
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    Nombre = "Administrador Sistema",
+                    IdentificadorArrendador = "petcare-ecuador", // Organización solicitada
+                    EmailConfirmed = true,
+                    FechaCreacion = DateTime.UtcNow
+                };
+
+                var result = await userManager.CreateAsync(newAdmin, "PetCare#admin$2026"); // Contraseña fuerte por defecto
+                
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(newAdmin, "Admin");
+                    Console.WriteLine("✅ Admin inicial creado exitosamente (User: admin@petcare.ec / Pass: PetCare#admin$2026)");
                 }
                 else
                 {
-                    Console.WriteLine($"ℹ️ Tenant '{tenant}' ya tiene usuarios");
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    Console.WriteLine($"❌ Error al crear Admin inicial: {errors}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("ℹ️ Admin inicial ya existe. Asegurando contraseña actualizada...");
+                var token = await userManager.GeneratePasswordResetTokenAsync(existingAdmin);
+                var result = await userManager.ResetPasswordAsync(existingAdmin, token, "PetCare#admin$2026");
+                
+                if (result.Succeeded)
+                {
+                    Console.WriteLine("✅ Contraseña de Admin actualizada correctamente a: PetCare#admin$2026");
+                }
+                else
+                {
+                    Console.WriteLine($"⚠️ No se pudo actualizar la contraseña: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+                
+                // Asegurar rol
+                if (!await userManager.IsInRoleAsync(existingAdmin, "Admin"))
+                {
+                    await userManager.AddToRoleAsync(existingAdmin, "Admin");
+                    Console.WriteLine("✅ Rol Admin asignado");
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error al verificar tenants: {ex.Message}");
+            Console.WriteLine($"❌ Error durante el seeding de Admin: {ex.Message}");
         }
 
         Console.WriteLine("Proceso de migraciones completado");
