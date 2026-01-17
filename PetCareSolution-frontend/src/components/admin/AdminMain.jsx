@@ -72,10 +72,10 @@ const AdminMain = () => {
         navigate('/login');
     };
 
-    const filteredUsers = users.filter(u =>
+    const filteredUsers = Array.isArray(users) ? users.filter(u =>
         u.nombreUsuario?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.emailUsuario?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    ) : [];
 
     const UserTable = ({ data }) => (
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
@@ -218,8 +218,8 @@ const AdminMain = () => {
                     <button
                         onClick={() => setActiveTab('clientes')}
                         className={`px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg ${activeTab === 'clientes'
-                                ? 'bg-indigo-600 text-white shadow-indigo-200 scale-105'
-                                : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                            ? 'bg-indigo-600 text-white shadow-indigo-200 scale-105'
+                            : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                             }`}
                     >
                         Clientes
@@ -227,8 +227,8 @@ const AdminMain = () => {
                     <button
                         onClick={() => setActiveTab('cuidadores')}
                         className={`px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg ${activeTab === 'cuidadores'
-                                ? 'bg-indigo-600 text-white shadow-indigo-200 scale-105'
-                                : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                            ? 'bg-indigo-600 text-white shadow-indigo-200 scale-105'
+                            : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                             }`}
                     >
                         Cuidadores
