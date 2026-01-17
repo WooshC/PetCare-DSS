@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5012/api/Payment';
+const BASE_URL = import.meta.env.VITE_PAYMENT_API_URL || '/api/Payment';
 
 const getAuthHeader = () => {
     const token = localStorage.getItem('token');
