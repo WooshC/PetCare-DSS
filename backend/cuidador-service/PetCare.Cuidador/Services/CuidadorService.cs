@@ -274,7 +274,8 @@ namespace PetCareServicios.Services
                         cuidadorResponse.NombreUsuario = userInfo.Name ?? string.Empty;
                         cuidadorResponse.EmailUsuario = userInfo.Email ?? string.Empty;
                         cuidadorResponse.TelefonoUsuario = userInfo.PhoneNumber ?? string.Empty;
-                        Console.WriteLine($"✅ Datos del usuario enriquecidos: {userInfo.Name} ({userInfo.Email}) - Tel: {userInfo.PhoneNumber}");
+                        cuidadorResponse.CuentaBloqueada = userInfo.CuentaBloqueada;
+                        Console.WriteLine($"✅ Datos del usuario enriquecidos: {userInfo.Name} ({userInfo.Email}) - Tel: {userInfo.PhoneNumber} - Bloqueada: {userInfo.CuentaBloqueada}");
                     }
                 }
                 else
@@ -299,6 +300,7 @@ namespace PetCareServicios.Services
             public string? Email { get; set; }
             public string? PhoneNumber { get; set; }
             public string? UserName { get; set; }
+            public bool CuentaBloqueada { get; set; }
         }
     }
 }

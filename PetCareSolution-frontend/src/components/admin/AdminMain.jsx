@@ -3,17 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { adminService } from '../../services/api/adminAPI';
 import {
     Shield, Users, CheckCircle2, XCircle, LogOut,
-    Search, User, Mail, FileCheck, Phone
+    Search, User, Mail, FileCheck, Phone, Lock, Unlock
 } from 'lucide-react';
 
 const AdminMain = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('clientes'); // 'clientes' or 'cuidadores'
+    const [activeTab, setActiveTab] = useState('usuarios'); // 'clientes', 'cuidadores', or 'usuarios'
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [processingId, setProcessingId] = useState(null);
+
+    // Modal states
+    const [showModal, setShowModal] = useState(false);
+    const [modalData, setModalData] = useState({
+        type: 'success', // 'success', 'error', 'confirm'
+        title: '',
+        message: '',
+        onConfirm: null
+    });
 
     // Obtener token
     const token = localStorage.getItem('token');
@@ -33,8 +42,12 @@ const AdminMain = () => {
             let data = [];
             if (activeTab === 'clientes') {
                 data = await adminService.getAllClientes(token);
-            } else {
+            } else if (activeTab === 'cuidadores') {
                 data = await adminService.getAllCuidadores(token);
+            } else if (activeTab === 'usuarios') {
+                // Obtener todos los usuarios desde el servicio de autenticación
+                const response = await adminService.getUsers(token);
+                data = response.datos || response || [];
             }
             setUsers(data || []);
         } catch (err) {
@@ -45,25 +58,107 @@ const AdminMain = () => {
         }
     };
 
-    const handleVerify = async (id) => {
-        if (!window.confirm("¿Seguro que deseas verificar este usuario?")) return;
-
-        setProcessingId(id);
-        try {
-            if (activeTab === 'clientes') {
-                await adminService.verifyCliente(token, id);
-            } else {
-                await adminService.verifyCuidador(token, id);
+    const handleVerify = (id) => {
+        setModalData({
+            type: 'confirm',
+            title: '¿Verificar Usuario?',
+            message: '¿Estás seguro de que deseas verificar el documento de este usuario?',
+            confirmType: 'success',
+            onConfirm: async () => {
+                setProcessingId(id);
+                try {
+                    if (activeTab === 'clientes') {
+                        await adminService.verifyCliente(token, id);
+                    } else {
+                        await adminService.verifyCuidador(token, id);
+                    }
+                    await loadUsers();
+                    setModalData({
+                        type: 'success',
+                        title: '¡Verificado!',
+                        message: 'El documento del usuario ha sido verificado exitosamente.'
+                    });
+                    setShowModal(true);
+                } catch (err) {
+                    console.error("Error verifying user:", err);
+                    setModalData({
+                        type: 'error',
+                        title: 'Error',
+                        message: `No se pudo verificar el usuario: ${err.message}`
+                    });
+                    setShowModal(true);
+                } finally {
+                    setProcessingId(null);
+                }
             }
-            // Recargar lista
-            await loadUsers();
-            alert("Usuario verificado exitosamente");
-        } catch (err) {
-            console.error("Error verifying user:", err);
-            alert("Error al verificar usuario: " + err.message);
-        } finally {
-            setProcessingId(null);
-        }
+        });
+        setShowModal(true);
+    };
+
+    const handleUnlock = (userId) => {
+        setModalData({
+            type: 'confirm',
+            title: '¿Desbloquear Cuenta?',
+            message: '¿Estás seguro de que deseas desbloquear esta cuenta de usuario?',
+            confirmType: 'success',
+            onConfirm: async () => {
+                setProcessingId(userId);
+                try {
+                    await adminService.unlockUser(token, userId);
+                    await loadUsers();
+                    setModalData({
+                        type: 'success',
+                        title: '¡Desbloqueado!',
+                        message: 'La cuenta ha sido desbloqueada exitosamente.'
+                    });
+                    setShowModal(true);
+                } catch (err) {
+                    console.error("Error unlocking user:", err);
+                    setModalData({
+                        type: 'error',
+                        title: 'Error',
+                        message: `No se pudo desbloquear la cuenta: ${err.message}`
+                    });
+                    setShowModal(true);
+                } finally {
+                    setProcessingId(null);
+                }
+            }
+        });
+        setShowModal(true);
+    };
+
+    const handleLock = (userId) => {
+        setModalData({
+            type: 'confirm',
+            title: '¿Bloquear Cuenta?',
+            message: '¿Estás seguro de que deseas bloquear esta cuenta de usuario? El usuario no podrá acceder al sistema.',
+            confirmType: 'danger',
+            onConfirm: async () => {
+                setProcessingId(userId);
+                try {
+                    await adminService.lockUser(token, userId);
+                    await loadUsers();
+                    setModalData({
+                        type: 'success',
+                        title: '¡Bloqueado!',
+                        message: 'La cuenta ha sido bloqueada exitosamente.'
+                    });
+                    setShowModal(true);
+                } catch (err) {
+                    console.error("Error locking user:", err);
+                    setModalData({
+                        type: 'error',
+                        title: 'Error',
+                        message: `No se pudo bloquear la cuenta: ${err.message}`
+                    });
+                    setShowModal(true);
+                } finally {
+                    setProcessingId(null);
+                }
+            }
+        });
+        setShowModal(true);
     };
 
     const handleLogout = () => {
@@ -72,10 +167,92 @@ const AdminMain = () => {
         navigate('/login');
     };
 
-    const filteredUsers = Array.isArray(users) ? users.filter(u =>
-        u.nombreUsuario?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.emailUsuario?.toLowerCase().includes(searchTerm.toLowerCase())
-    ) : [];
+    // Filtrar usuarios según la pestaña activa
+    const filteredUsers = Array.isArray(users) ? users.filter(u => {
+        // Para la pestaña de usuarios (auth), mostrar SOLO cuentas bloqueadas
+        if (activeTab === 'usuarios') {
+            // Filtrar solo usuarios bloqueados
+            if (!u.cuentaBloqueada) return false;
+
+            // Aplicar búsqueda
+            const searchLower = searchTerm.toLowerCase();
+            return (
+                u.nombre?.toLowerCase().includes(searchLower) ||
+                u.correo?.toLowerCase().includes(searchLower) ||
+                u.telefono?.toLowerCase().includes(searchLower)
+            );
+        }
+
+        // Para clientes y cuidadores: excluir usuarios ya verificados
+        if (u.documentoVerificado) return false;
+
+        // Aplicar filtro de búsqueda
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            u.nombreUsuario?.toLowerCase().includes(searchLower) ||
+            u.emailUsuario?.toLowerCase().includes(searchLower) ||
+            u.documentoIdentidad?.toLowerCase().includes(searchLower)
+        );
+    }) : [];
+
+    // Modal Component
+    const Modal = () => {
+        if (!showModal) return null;
+
+        const isConfirm = modalData.type === 'confirm';
+
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 border border-slate-100 animate-in zoom-in-95 duration-300">
+                    <div className="text-center">
+                        <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 ${modalData.type === 'success' ? 'bg-emerald-50 text-emerald-500' :
+                            modalData.type === 'error' ? 'bg-red-50 text-red-500' :
+                                'bg-amber-50 text-amber-500'
+                            }`}>
+                            {modalData.type === 'success' ? <CheckCircle2 className="w-10 h-10" /> :
+                                modalData.type === 'error' ? <XCircle className="w-10 h-10" /> :
+                                    <Lock className="w-10 h-10" />}
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 mb-2">{modalData.title}</h3>
+                        <p className="text-slate-500 font-medium mb-8 leading-relaxed">{modalData.message}</p>
+
+                        {isConfirm ? (
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="flex-1 py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all transform active:scale-95"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        if (modalData.onConfirm) modalData.onConfirm();
+                                    }}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-white transition-all transform active:scale-95 shadow-lg ${modalData.confirmType === 'danger'
+                                        ? 'bg-red-500 hover:bg-red-600 shadow-red-200'
+                                        : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'
+                                        }`}
+                                >
+                                    Confirmar
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-white transition-all transform active:scale-95 shadow-lg ${modalData.type === 'success'
+                                    ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'
+                                    : 'bg-red-500 hover:bg-red-600 shadow-red-200'
+                                    }`}
+                            >
+                                Continuar
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     const UserTable = ({ data }) => (
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
@@ -91,65 +268,125 @@ const AdminMain = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
-                        {data.map((user) => (
-                            <tr key={user.clienteID || user.cuidadorID} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="px-6 py-4 text-sm font-bold text-slate-500">
-                                    #{user.clienteID || user.cuidadorID}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center">
-                                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mr-3">
-                                            <User className="w-5 h-5" />
+                        {data.map((user) => {
+                            // Mapear campos según el tipo de datos
+                            const isAuthUser = activeTab === 'usuarios';
+                            const userId = isAuthUser ? user.identificador : (user.clienteID || user.cuidadorID);
+                            const userName = isAuthUser ? user.nombre : user.nombreUsuario;
+                            const userEmail = isAuthUser ? user.correo : user.emailUsuario;
+                            const userPhone = isAuthUser ? user.telefono : (user.telefonoEmergencia || user.telefono);
+                            const userDoc = isAuthUser ? 'N/A' : user.documentoIdentidad;
+                            const userRoles = isAuthUser ? (user.roles || []).join(', ') : '';
+
+                            return (
+                                <tr key={userId} className="hover:bg-slate-50/50 transition-colors">
+                                    <td className="px-6 py-4 text-sm font-bold text-slate-500">
+                                        #{userId}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mr-3">
+                                                <User className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-800">{userName}</p>
+                                                {isAuthUser ? (
+                                                    <p className="text-xs text-slate-400">Rol: {userRoles || 'N/A'}</p>
+                                                ) : (
+                                                    <p className="text-xs text-slate-400">CI: {userDoc}</p>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-slate-800">{user.nombreUsuario}</p>
-                                            <p className="text-xs text-slate-400">CI: {user.documentoIdentidad || 'N/A'}</p>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center text-xs text-slate-600">
+                                                <Mail className="w-3 h-3 mr-2 text-slate-400" />
+                                                {userEmail}
+                                            </div>
+                                            <div className="flex items-center text-xs text-slate-600">
+                                                <Phone className="w-3 h-3 mr-2 text-slate-400" />
+                                                {userPhone || 'N/A'}
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center text-xs text-slate-600">
-                                            <Mail className="w-3 h-3 mr-2 text-slate-400" />
-                                            {user.emailUsuario}
-                                        </div>
-                                        <div className="flex items-center text-xs text-slate-600">
-                                            <Phone className="w-3 h-3 mr-2 text-slate-400" />
-                                            {user.telefonoEmergencia || user.telefono || 'N/A'}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    {user.documentoVerificado ? (
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                                            Verificado
-                                        </span>
-                                    ) : (
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
-                                            <XCircle className="w-3 h-3 mr-1" />
-                                            Pendiente
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {!user.documentoVerificado && (
-                                        <button
-                                            onClick={() => handleVerify(user.clienteID || user.cuidadorID)}
-                                            disabled={processingId === (user.clienteID || user.cuidadorID)}
-                                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                                        >
-                                            {processingId === (user.clienteID || user.cuidadorID) ? 'Procesando...' : (
-                                                <>
-                                                    <FileCheck className="w-3 h-3 mr-2" />
-                                                    Validar
-                                                </>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col gap-2">
+                                            {/* Estado de verificación de documento (solo para clientes/cuidadores) */}
+                                            {!isAuthUser && !user.documentoVerificado && (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+                                                    <XCircle className="w-3 h-3 mr-1" />
+                                                    Pendiente Verificación
+                                                </span>
                                             )}
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+
+                                            {/* Estado de cuenta bloqueada */}
+                                            {user.cuentaBloqueada && (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                                                    🔒 Cuenta Bloqueada
+                                                </span>
+                                            )}
+
+                                            {/* Estado activo (solo para usuarios de auth sin bloqueo) */}
+                                            {isAuthUser && !user.cuentaBloqueada && (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                                    Activo
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col gap-2">
+                                            {/* Botón de verificar documento (solo para clientes/cuidadores no verificados) */}
+                                            {!isAuthUser && !user.documentoVerificado && (
+                                                <button
+                                                    onClick={() => handleVerify(user.clienteID || user.cuidadorID)}
+                                                    disabled={processingId === (user.clienteID || user.cuidadorID) || processingId === user.usuarioID}
+                                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                                >
+                                                    {processingId === (user.clienteID || user.cuidadorID) ? 'Procesando...' : (
+                                                        <>
+                                                            <FileCheck className="w-3 h-3 mr-2" />
+                                                            Validar Documento
+                                                        </>
+                                                    )}
+                                                </button>
+                                            )}
+
+                                            {/* Botón de desbloquear/bloquear cuenta */}
+                                            {user.cuentaBloqueada ? (
+                                                <button
+                                                    onClick={() => handleUnlock(user.usuarioID || user.identificador)}
+                                                    disabled={processingId === (user.usuarioID || user.identificador)}
+                                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                                >
+                                                    {processingId === (user.usuarioID || user.identificador) ? 'Procesando...' : (
+                                                        <>
+                                                            <Unlock className="w-3 h-3 mr-2" />
+                                                            Desbloquear Cuenta
+                                                        </>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleLock(user.usuarioID || user.identificador)}
+                                                    disabled={processingId === (user.usuarioID || user.identificador)}
+                                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-red-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                                >
+                                                    {processingId === (user.usuarioID || user.identificador) ? 'Procesando...' : (
+                                                        <>
+                                                            <Lock className="w-3 h-3 mr-2" />
+                                                            Bloquear Cuenta
+                                                        </>
+                                                    )}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
                 {data.length === 0 && (
@@ -216,6 +453,15 @@ const AdminMain = () => {
                 {/* Tabs */}
                 <div className="flex gap-4 mb-8">
                     <button
+                        onClick={() => setActiveTab('usuarios')}
+                        className={`px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg ${activeTab === 'usuarios'
+                            ? 'bg-red-600 text-white shadow-red-200 scale-105'
+                            : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                            }`}
+                    >
+                        🔒 Cuentas Bloqueadas
+                    </button>
+                    <button
                         onClick={() => setActiveTab('clientes')}
                         className={`px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg ${activeTab === 'clientes'
                             ? 'bg-indigo-600 text-white shadow-indigo-200 scale-105'
@@ -250,6 +496,7 @@ const AdminMain = () => {
                     <UserTable data={filteredUsers} />
                 )}
             </main>
+            <Modal />
         </div>
     );
 };

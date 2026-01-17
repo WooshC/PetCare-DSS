@@ -86,5 +86,29 @@ export const adminService = {
         } catch (error) {
             throw new Error(error.response?.data?.message || error.message);
         }
+    },
+
+    // Desbloquear cuenta de usuario
+    unlockUser: async (token, userId) => {
+        try {
+            const response = await authApi.post(`/Admin/users/${userId}/unlock`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.mensaje || error.message);
+        }
+    },
+
+    // Bloquear cuenta de usuario
+    lockUser: async (token, userId) => {
+        try {
+            const response = await authApi.post(`/Admin/users/${userId}/lock`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.mensaje || error.message);
+        }
     }
 };

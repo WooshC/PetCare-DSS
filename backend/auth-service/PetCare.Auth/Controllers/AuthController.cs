@@ -205,7 +205,8 @@ namespace PetCareServicios.Controllers
                     PhoneNumber = usuario.PhoneNumber ?? string.Empty,
                     UserName = usuario.UserName ?? string.Empty,
                     CreatedAt = usuario.FechaCreacion,
-                    Roles = roles.ToList()
+                    Roles = roles.ToList(),
+                    CuentaBloqueada = usuario.CuentaBloqueada
                 };
 
                 return Ok(informacion);
