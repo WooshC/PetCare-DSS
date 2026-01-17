@@ -5,6 +5,7 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Dashboard from './pages/Dashboard/Dashboard';
 import CuidadorMain from './components/cuidador/CuidadorMain';
+import AdminMain from './components/admin/AdminMain';
 import './index.css';
 import ClienteMain from './components/cliente/ClienteMain';
 import PaymentSummary from './components/cliente/PaymentSummary';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/cuidador/dashboard" element={<CuidadorMain />} />
           <Route path="/cliente/dashboard" element={<ClienteMain />} />
+          <Route path="/admin/dashboard" element={<AdminMain />} />
 
           {/* Ruta de pago */}
           <Route path="/cliente/pago/:solicitudId" element={<PaymentSummary />} />

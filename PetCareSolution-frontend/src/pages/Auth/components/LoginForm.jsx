@@ -188,8 +188,8 @@ const LoginForm = () => {
                   type="button"
                   onClick={() => setSelectedRole('cuidador')}
                   className={`p-5 rounded-3xl border-2 transition-all flex flex-col items-center group relative overflow-hidden ${selectedRole === 'cuidador'
-                      ? 'border-brand-500 bg-brand-50/50 shadow-lg shadow-brand-100/50'
-                      : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
+                    ? 'border-brand-500 bg-brand-50/50 shadow-lg shadow-brand-100/50'
+                    : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
                     }`}
                 >
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${selectedRole === 'cuidador' ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-400'
@@ -204,8 +204,8 @@ const LoginForm = () => {
                   type="button"
                   onClick={() => setSelectedRole('cliente')}
                   className={`p-5 rounded-3xl border-2 transition-all flex flex-col items-center group relative overflow-hidden ${selectedRole === 'cliente'
-                      ? 'border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-100/50'
-                      : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
+                    ? 'border-emerald-500 bg-emerald-50/50 shadow-lg shadow-emerald-100/50'
+                    : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
                     }`}
                 >
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${selectedRole === 'cliente' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'
@@ -216,6 +216,18 @@ const LoginForm = () => {
                   {selectedRole === 'cliente' && <div className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full"></div>}
                 </button>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedRole('admin')}
+                className={`w-full mt-4 p-3 rounded-2xl border-2 transition-all flex items-center justify-center gap-3 group relative overflow-hidden ${selectedRole === 'admin'
+                  ? 'border-slate-800 bg-slate-50 shadow-lg'
+                  : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
+                  }`}
+              >
+                <Shield className={`w-5 h-5 ${selectedRole === 'admin' ? 'text-slate-900' : 'text-slate-400'}`} />
+                <span className={`text-xs font-black uppercase tracking-widest ${selectedRole === 'admin' ? 'text-slate-900' : 'text-slate-400'}`}>Administrador</span>
+              </button>
             </div>
 
             <Button
@@ -239,9 +251,9 @@ const LoginForm = () => {
             </div>
           </form>
         </div>
-      </div>
+      </div >
       <Modal />
-    </div>
+    </div >
   );
 };
 

@@ -26,5 +26,6 @@ namespace PetCareServicios.Models.Clientes
         public string Estado { get; set; } = string.Empty;
         public string NombreUsuario { get; set; } = string.Empty;
         public string EmailUsuario { get; set; } = string.Empty;
+        public bool CuentaBloqueada { get; set; } = false;
     }
 } 

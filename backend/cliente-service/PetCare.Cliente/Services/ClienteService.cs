@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PetCareServicios.Data;
 using PetCareServicios.Models.Clientes;
 using PetCareServicios.Services.Interfaces;
+using System.Net.Http.Json;
 
 namespace PetCareServicios.Services
 {
@@ -10,11 +11,19 @@ namespace PetCareServicios.Services
     {
         private readonly ClienteDbContext _context;
         private readonly IMapper _mapper;
+        private readonly HttpClient _httpClient;
+        private readonly string _authServiceUrl;
 
-        public ClienteService(ClienteDbContext context, IMapper mapper)
+        public ClienteService(
+            ClienteDbContext context, 
+            IMapper mapper,
+            HttpClient httpClient,
+            IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
+            _httpClient = httpClient;
+            _authServiceUrl = configuration["Services:AuthServiceUrl"] ?? "http://localhost:5043/api/auth";
         }
 
         public async Task<ClienteResponse?> GetByUsuarioIdAsync(int usuarioId)
@@ -32,7 +41,13 @@ namespace PetCareServicios.Services
         public async Task<List<ClienteResponse>> GetAllAsync()
         {
             var clientes = await _context.Clientes.Where(c => c.Estado == "Activo").ToListAsync();
-            return _mapper.Map<List<ClienteResponse>>(clientes);
+            var responses = _mapper.Map<List<ClienteResponse>>(clientes);
+            
+            // Enriquecer todas las respuestas en paralelo para mejor rendimiento
+            var enrichmentTasks = responses.Select(response => EnriquecerConDatosDelUsuarioAsync(response));
+            await Task.WhenAll(enrichmentTasks);
+            
+            return responses;
         }
 
         public async Task<ClienteResponse> CreateAsync(int usuarioId, ClienteRequest request, string nombreUsuario, string emailUsuario)
@@ -85,6 +100,57 @@ namespace PetCareServicios.Services
             cliente.FechaVerificacion = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>
+        /// Enriquece la respuesta de cliente con datos del usuario desde auth-service
+        /// </summary>
+        private async Task EnriquecerConDatosDelUsuarioAsync(ClienteResponse clienteResponse)
+        {
+            try
+            {
+                // Llamar a auth-service para obtener datos del usuario
+                var url = $"{_authServiceUrl}/users/{clienteResponse.UsuarioID}";
+                Console.WriteLine($"🔗 Obteniendo datos del usuario desde: {url}");
+                
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var userInfo = await response.Content.ReadFromJsonAsync<UserInfoDto>();
+                    
+                    if (userInfo != null)
+                    {
+                        clienteResponse.NombreUsuario = userInfo.Name ?? string.Empty;
+                        clienteResponse.EmailUsuario = userInfo.Email ?? string.Empty;
+                        clienteResponse.CuentaBloqueada = userInfo.CuentaBloqueada;
+                        Console.WriteLine($"✅ Datos del usuario enriquecidos: {userInfo.Name} ({userInfo.Email}) - Bloqueada: {userInfo.CuentaBloqueada}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"⚠️ Auth-service respondió con status {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Si auth-service no responde, usamos valores por defecto
+                Console.WriteLine($"❌ Error al obtener datos del usuario desde auth-service: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// DTO para recibir datos del usuario desde auth-service
+        /// </summary>
+        private class UserInfoDto
+        {
+            public int Id { get; set; }
+            public string? Name { get; set; }
+            public string? Email { get; set; }
+            public string? PhoneNumber { get; set; }
+            public string? UserName { get; set; }
+            public bool CuentaBloqueada { get; set; }
         }
     }
 } 

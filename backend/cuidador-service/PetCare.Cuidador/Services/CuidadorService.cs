@@ -36,17 +36,13 @@ namespace PetCareServicios.Services
 
             var responses = _mapper.Map<List<CuidadorResponse>>(cuidadores);
 
-            // Sincronizar calificaciones y enriquecer con datos del usuario para todos los cuidadores activos
-            foreach (var cuidador in cuidadores)
-            {
-                await SyncRatingAsync(cuidador);
-            }
+            // Sincronizar calificaciones en paralelo
+            var ratingTasks = cuidadores.Select(c => SyncRatingAsync(c));
+            await Task.WhenAll(ratingTasks);
             
-            // Enriquecer cada respuesta con datos del usuario (sin token para listado público)
-            foreach (var response in responses)
-            {
-                await EnriquecerConDatosDelUsuarioAsync(response, null);
-            }
+            // Enriquecer todas las respuestas con datos del usuario en paralelo
+            var enrichmentTasks = responses.Select(response => EnriquecerConDatosDelUsuarioAsync(response, null));
+            await Task.WhenAll(enrichmentTasks);
 
             return responses;
         }
@@ -278,7 +274,8 @@ namespace PetCareServicios.Services
                         cuidadorResponse.NombreUsuario = userInfo.Name ?? string.Empty;
                         cuidadorResponse.EmailUsuario = userInfo.Email ?? string.Empty;
                         cuidadorResponse.TelefonoUsuario = userInfo.PhoneNumber ?? string.Empty;
-                        Console.WriteLine($"✅ Datos del usuario enriquecidos: {userInfo.Name} ({userInfo.Email}) - Tel: {userInfo.PhoneNumber}");
+                        cuidadorResponse.CuentaBloqueada = userInfo.CuentaBloqueada;
+                        Console.WriteLine($"✅ Datos del usuario enriquecidos: {userInfo.Name} ({userInfo.Email}) - Tel: {userInfo.PhoneNumber} - Bloqueada: {userInfo.CuentaBloqueada}");
                     }
                 }
                 else
@@ -303,6 +300,7 @@ namespace PetCareServicios.Services
             public string? Email { get; set; }
             public string? PhoneNumber { get; set; }
             public string? UserName { get; set; }
+            public bool CuentaBloqueada { get; set; }
         }
     }
 }

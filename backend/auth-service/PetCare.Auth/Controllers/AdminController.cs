@@ -21,38 +21,7 @@ namespace PetCareServicios.Controllers
             _servicioAdmin = servicioAdmin;
         }
 
-        /// <summary>
-        /// Bootstrap: Registra el PRIMER admin de un tenant
-        /// IMPORTANTE: Este endpoint NO requiere autenticación pero SOLO funciona si no hay admins
-        /// Úsalo una sola vez por tenant para crear el primer administrador
-        /// </summary>
-        [HttpPost("bootstrap")]
-        [AllowAnonymous]
-        public async Task<ActionResult<RespuestaOperacionAdmin>> BootstrapAdmin(
-            [FromBody] BootstrapAdminRequest solicitud)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
-            var resultado = await _servicioAdmin.RegistrarPrimerAdminAsync(
-                new AdminRegisterRequest
-                {
-                    Correo = solicitud.Correo,
-                    Contraseña = solicitud.Contraseña,
-                    Nombre = solicitud.Nombre,
-                    Telefono = solicitud.Telefono
-                },
-                solicitud.IdentificadorArrendador);
-
-            if (!resultado.Exitosa)
-            {
-                return BadRequest(resultado);
-            }
-
-            return Ok(resultado);
-        }
 
         /// <summary>
         /// Registra un nuevo Admin del sistema

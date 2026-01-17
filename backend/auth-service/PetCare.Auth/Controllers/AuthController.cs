@@ -180,9 +180,10 @@ namespace PetCareServicios.Controllers
 
         /// <summary>
         /// Obtener información de un usuario específico
+        /// Permite acceso anónimo para llamadas internas entre servicios
         /// </summary>
         [HttpGet("users/{id}")]
-        [Authorize]
+        [AllowAnonymous] // Permitir acceso interno desde otros microservicios que no pasan token
         public async Task<ActionResult<UserInfoResponse>> GetUserById(int id)
         {
             try
@@ -204,7 +205,8 @@ namespace PetCareServicios.Controllers
                     PhoneNumber = usuario.PhoneNumber ?? string.Empty,
                     UserName = usuario.UserName ?? string.Empty,
                     CreatedAt = usuario.FechaCreacion,
-                    Roles = roles.ToList()
+                    Roles = roles.ToList(),
+                    CuentaBloqueada = usuario.CuentaBloqueada
                 };
 
                 return Ok(informacion);
