@@ -31,13 +31,20 @@ builder.Services.AddDbContext<PaymentDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Default");
     options.UseSqlServer(connectionString);
-    Console.WriteLine($"🔗 Connection string cargada para Payment: {connectionString}");
+    // Log removido por seguridad
 });
 
 // Services
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddSingleton<EncryptionService>();
-builder.Services.AddScoped<PayPalService>(); // Scoped because it uses HttpClient factory
+builder.Services.AddScoped<PayPalService>(); 
+
+// Auditoría Shared Kernel
+builder.Services.AddScoped<PetCare.Shared.IAuditService, PetCare.Shared.AuditService>();
+builder.Services.AddDbContext<PetCare.Shared.Data.AuditDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+});
 
 builder.Services.AddCors(options =>
 {
@@ -61,6 +68,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 
 app.UseAuthorization();
+app.UseMiddleware<PetCare.Shared.AuditMiddleware>();
 
 app.MapControllers();
 

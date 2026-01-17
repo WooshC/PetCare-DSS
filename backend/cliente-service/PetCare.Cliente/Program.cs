@@ -98,8 +98,17 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Servicios
+// Servicios
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IClienteService, ClienteService>();
+
+// Auditoría Shared Kernel
+builder.Services.AddScoped<PetCare.Shared.IAuditService, PetCare.Shared.AuditService>();
+// Registrar contexto de auditoría (usando la misma conexión por simplicidad en demo)
+builder.Services.AddDbContext<PetCare.Shared.Data.AuditDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 var app = builder.Build();
 
@@ -117,6 +126,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<PetCare.Shared.AuditMiddleware>();
 app.MapControllers();
 
 // Aplicar migraciones automáticas con feedback

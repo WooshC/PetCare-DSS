@@ -85,10 +85,7 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
     
     options.UseSqlServer(connectionString);
     
-    Console.WriteLine($"🔗 Connection string cargada:");
-    Console.WriteLine($"   Server: {connectionString.Split(';').FirstOrDefault(s => s.StartsWith("Server="))?.Replace("Server=", "")}");
-    Console.WriteLine($"   Database: {connectionString.Split(';').FirstOrDefault(s => s.StartsWith("Database="))?.Replace("Database=", "")}");
-    Console.WriteLine($"   User: {connectionString.Split(';').FirstOrDefault(s => s.StartsWith("User Id="))?.Replace("User Id=", "")}");
+    // Logs de conexión removidos por seguridad
     Console.WriteLine($"🔧 Entorno de configuración: {builder.Environment.EnvironmentName}");
 });
 

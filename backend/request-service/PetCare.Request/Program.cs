@@ -106,10 +106,7 @@ builder.Services.AddDbContext<RequestDbContext>(options =>
     
     options.UseSqlServer(connectionString);
     
-    Console.WriteLine($"🔗 Connection string cargada:");
-    Console.WriteLine($"   Server: {connectionString.Split(';').FirstOrDefault(s => s.StartsWith("Server="))?.Replace("Server=", "")}");
-    Console.WriteLine($"   Database: {connectionString.Split(';').FirstOrDefault(s => s.StartsWith("Database="))?.Replace("Database=", "")}");
-    Console.WriteLine($"   User: {connectionString.Split(';').FirstOrDefault(s => s.StartsWith("User Id="))?.Replace("User Id=", "")}");
+    // Logs de conexión removidos por seguridad
     Console.WriteLine($"🔧 Entorno de configuración: {builder.Environment.EnvironmentName}");
 });
 
@@ -120,7 +117,13 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddScoped<ISolicitudService, SolicitudService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
-builder.Services.AddHttpContextAccessor();
+
+// Auditoría Shared Kernel
+builder.Services.AddScoped<PetCare.Shared.IAuditService, PetCare.Shared.AuditService>();
+builder.Services.AddDbContext<PetCare.Shared.Data.AuditDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+});
 var app = builder.Build();
 
 // Configurar URLs para Docker
@@ -142,6 +145,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<PetCare.Shared.AuditMiddleware>();
 
 app.MapControllers();
 

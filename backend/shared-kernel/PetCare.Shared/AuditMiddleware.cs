@@ -36,6 +36,13 @@ namespace PetCare.Shared
 
             if (request.Method != "GET" && request.Method != "OPTIONS")
             {
+                // Sanitizar body si es endpoints de login o registro
+                string path = request.Path.ToString().ToLower();
+                if (path.Contains("/login") || path.Contains("/register"))
+                {
+                    requestBody = "[SENSITIVE DATA HIDDEN]";
+                }
+
                 var audit = new AuditLog
                 {
                     UserId = userId,

@@ -1,0 +1,149 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # BASES DE DATOS (Con persistencia)
+  # ==========================================
+  db-auth:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlvolume-auth:/var/opt/mssql
+    restart: always
+
+  db-cliente:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlvolume-cliente:/var/opt/mssql
+    restart: always
+
+  db-cuidador:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlvolume-cuidador:/var/opt/mssql
+    restart: always
+
+  db-request:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlvolume-request:/var/opt/mssql
+    restart: always
+
+  db-payment:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlvolume-payment:/var/opt/mssql
+    restart: always
+
+  db-calificar:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlvolume-calificar:/var/opt/mssql
+    restart: always
+
+  # ==========================================
+  # MICROSERVICIOS (Desde Azure Container Registry)
+  # ==========================================
+  petcare-auth:
+    image: ${ACR_NAME}.azurecr.io/petcare-auth:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db-auth;Database=AuthDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+    depends_on:
+      - db-auth
+    restart: always
+
+  petcare-cliente:
+    image: ${ACR_NAME}.azurecr.io/petcare-cliente:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db-cliente;Database=ClienteDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+      # URLs internas entre contenedores
+      - Services__AuthServiceUrl=http://petcare-auth:8080
+    depends_on:
+      - db-cliente
+      - petcare-auth
+    restart: always
+
+  petcare-cuidador:
+    image: ${ACR_NAME}.azurecr.io/petcare-cuidador:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db-cuidador;Database=CuidadorDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+      - Services__AuthServiceUrl=http://petcare-auth:8080
+      - Services__RatingServiceUrl=http://petcare-calificar:8080
+    depends_on:
+      - db-cuidador
+      - petcare-auth
+    restart: always
+
+  petcare-request:
+    image: ${ACR_NAME}.azurecr.io/petcare-request:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db-request;Database=RequestDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+    depends_on:
+      - db-request
+    restart: always
+
+  petcare-payment:
+    image: ${ACR_NAME}.azurecr.io/petcare-payment:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db-payment;Database=PaymentDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+    depends_on:
+      - db-payment
+    restart: always
+
+  petcare-calificar:
+    image: ${ACR_NAME}.azurecr.io/petcare-calificar:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db-calificar;Database=RatingDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+    depends_on:
+      - db-calificar
+    restart: always
+
+  # ==========================================
+  # FRONTEND (Punto de entrada público)
+  # ==========================================
+  petcare-frontend:
+    image: ${ACR_NAME}.azurecr.io/petcare-frontend:latest
+    ports:
+      - "80:80"
+    environment:
+      # URLs relativas o públicas del API Gateway (o Web App directa)
+      # Nota: En un entorno simple sin Gateway, el front llamaría a la URL pública de Azure
+      - VITE_AUTH_API_URL=/api/auth
+      - VITE_CLIENT_API_URL=/api/cliente
+      - VITE_CAREGIVER_API_URL=/api/cuidador
+      # ... Ajustar según si se usa Nginx Reverse Proxy
+    depends_on:
+      - petcare-auth
+      - petcare-cliente
+    restart: always
+
+volumes:
+  sqlvolume-auth:
+  sqlvolume-cliente:
+  sqlvolume-cuidador:
+  sqlvolume-request:
+  sqlvolume-payment:
+  sqlvolume-calificar:
