@@ -3,57 +3,62 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PetCare.Calificar.Data;
+using PetCare.Payment.Data;
 
 #nullable disable
 
-namespace PetCare.Calificar.Migrations
+namespace PetCare.Payment.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(PaymentDbContext))]
+    [Migration("20260117070127_AddAuditLogTable")]
+    partial class AddAuditLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.15")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PetCare.Calificar.Models.Ratings", b =>
+            modelBuilder.Entity("PetCare.Payment.Models.CreditCardEntity", b =>
                 {
-                    b.Property<int>("CalificacionID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CalificacionID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClienteID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Comment")
+                    b.Property<string>("CardHolderName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnType("datetime2");
 
-                    b.Property<int?>("CuidadorID")
-                        .HasColumnType("int");
+                    b.Property<string>("EncryptedCardNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RequestId")
-                        .HasColumnType("int");
+                    b.Property<string>("ExpirationDate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
+                    b.Property<string>("MaskedNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CalificacionID");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("Ratings", (string)null);
+                    b.HasKey("Id");
+
+                    b.ToTable("CreditCards");
                 });
 
             modelBuilder.Entity("PetCare.Shared.AuditLog", b =>

@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetCareServicios.Data;
 
 #nullable disable
 
-namespace PetCare.Cuidador.Migrations
+namespace PetCare.Request.Migrations
 {
-    [DbContext(typeof(CuidadorDbContext))]
-    partial class CuidadorDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(RequestDbContext))]
+    [Migration("20260117072608_AddAuditLogTable")]
+    partial class AddAuditLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,76 +72,84 @@ namespace PetCare.Cuidador.Migrations
                     b.ToTable("AuditLogs", (string)null);
                 });
 
-            modelBuilder.Entity("PetCareServicios.Models.Cuidadores.Cuidador", b =>
+            modelBuilder.Entity("PetCareServicios.Models.Solicitudes.Solicitud", b =>
                 {
-                    b.Property<int>("CuidadorID")
+                    b.Property<int>("SolicitudID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CuidadorID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SolicitudID"));
 
-                    b.Property<string>("Biografia")
+                    b.Property<int?>("ClienteID")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CuidadorID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("CalificacionPromedio")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("DECIMAL(3,2)")
-                        .HasDefaultValue(0.0m);
+                    b.Property<int>("DuracionHoras")
+                        .HasColumnType("int");
 
-                    b.Property<string>("DocumentoIdentidad")
+                    b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<bool>("DocumentoVerificado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Activo");
-
-                    b.Property<string>("Experiencia")
-                        .HasColumnType("TEXT");
+                    b.Property<DateTime?>("FechaAceptacion")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("FechaActualizacion")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("FechaVerificacion")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("HorarioAtencion")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<DateTime?>("FechaFinalizacion")
+                        .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("TarifaPorHora")
-                        .HasColumnType("DECIMAL(10,2)");
+                    b.Property<DateTime>("FechaHoraInicio")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("TelefonoEmergencia")
+                    b.Property<DateTime?>("FechaInicioServicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRated")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModoPago")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("UsuarioID")
-                        .HasColumnType("int");
+                    b.Property<string>("TipoServicio")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("CuidadorID");
+                    b.Property<string>("Ubicacion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
-                    b.HasIndex("DocumentoIdentidad");
+                    b.HasKey("SolicitudID");
+
+                    b.HasIndex("ClienteID");
+
+                    b.HasIndex("CuidadorID");
 
                     b.HasIndex("Estado");
 
-                    b.HasIndex("UsuarioID")
-                        .IsUnique();
+                    b.HasIndex("FechaCreacion");
 
-                    b.ToTable("Cuidadores");
+                    b.HasIndex("FechaHoraInicio");
+
+                    b.ToTable("Solicitudes");
                 });
 #pragma warning restore 612, 618
         }

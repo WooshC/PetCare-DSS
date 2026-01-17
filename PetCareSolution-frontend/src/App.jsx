@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Home from './pages/Home/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
-import Dashboard from './pages/Dashboard/Dashboard';
+import Dashboard from './pages/DashBoard/Dashboard';
 import CuidadorMain from './components/cuidador/CuidadorMain';
 import AdminMain from './components/admin/AdminMain';
 import './index.css';

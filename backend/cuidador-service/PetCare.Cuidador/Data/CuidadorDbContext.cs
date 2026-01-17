@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PetCareServicios.Models.Cuidadores;
+using PetCare.Shared;
 
 namespace PetCareServicios.Data
 {
@@ -55,6 +56,19 @@ namespace PetCareServicios.Data
                 entity.HasIndex(e => e.UsuarioID).IsUnique();
                 entity.HasIndex(e => e.DocumentoIdentidad);
                 entity.HasIndex(e => e.Estado);
+            });
+
+            // Configuración de AuditLog
+            builder.Entity<AuditLog>(entity =>
+            {
+                entity.ToTable("AuditLogs");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).HasMaxLength(100);
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.EntityName).HasMaxLength(200);
+                entity.Property(e => e.EntityId).HasMaxLength(100);
+                entity.Property(e => e.IpAddress).HasMaxLength(45);
+                entity.Property(e => e.Timestamp).HasDefaultValueSql("GETUTCDATE()");
             });
         }
     }

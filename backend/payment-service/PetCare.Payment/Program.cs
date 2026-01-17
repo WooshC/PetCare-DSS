@@ -75,8 +75,18 @@ app.MapControllers();
 // Auto migration for demo purposes
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
-    db.Database.EnsureCreated();
+    var services = scope.ServiceProvider;
+    try
+    {
+        var db = services.GetRequiredService<PaymentDbContext>();
+        Console.WriteLine("🔄 Iniciando aplicación de migraciones para PaymentDbContext...");
+        db.Database.Migrate();
+        Console.WriteLine("✅ Migraciones aplicadas exitosamente a PaymentDbContext");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error al aplicar migraciones: {ex.Message}");
+    }
 }
 
 // Configure URLs for Docker

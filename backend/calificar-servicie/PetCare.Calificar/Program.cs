@@ -124,6 +124,13 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // ====================================================
 // 🚀 CONSTRUIR APLICACIÓN
 // ====================================================
+// Auditoría Shared Kernel
+builder.Services.AddScoped<PetCare.Shared.IAuditService, PetCare.Shared.AuditService>();
+builder.Services.AddDbContext<PetCare.Shared.Data.AuditDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+});
+
 // Registrar HttpClient para inyección
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
@@ -145,6 +152,7 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<PetCare.Shared.AuditMiddleware>();
 
 app.MapControllers();
 

@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PetCareServicios.Data;
+using PetCare.Calificar.Data;
 
 #nullable disable
 
-namespace PetCare.Cliente.Migrations
+namespace PetCare.Calificar.Migrations
 {
-    [DbContext(typeof(ClienteDbContext))]
-    partial class ClienteDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260117070252_AddAuditLogTable")]
+    partial class AddAuditLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,40 @@ namespace PetCare.Cliente.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("PetCare.Calificar.Models.Ratings", b =>
+                {
+                    b.Property<int>("CalificacionID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CalificacionID"));
+
+                    b.Property<int?>("ClienteID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int?>("CuidadorID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.HasKey("CalificacionID");
+
+                    b.ToTable("Ratings", (string)null);
+                });
 
             modelBuilder.Entity("PetCare.Shared.AuditLog", b =>
                 {
@@ -67,60 +104,6 @@ namespace PetCare.Cliente.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AuditLogs", (string)null);
-                });
-
-            modelBuilder.Entity("PetCareServicios.Models.Clientes.Cliente", b =>
-                {
-                    b.Property<int>("ClienteID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClienteID"));
-
-                    b.Property<string>("DocumentoIdentidad")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<bool>("DocumentoVerificado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Activo");
-
-                    b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("FechaVerificacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TelefonoEmergencia")
-                        .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
-
-                    b.Property<int>("UsuarioID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ClienteID");
-
-                    b.HasIndex("DocumentoIdentidad");
-
-                    b.HasIndex("Estado");
-
-                    b.HasIndex("UsuarioID")
-                        .IsUnique();
-
-                    b.ToTable("Clientes");
                 });
 #pragma warning restore 612, 618
         }
