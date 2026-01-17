@@ -3,36 +3,58 @@ import React, { useState, useEffect, useMemo } from 'react';
 import PerfilUsuario from '../common/PerfilUsuario';
 import Pagination from '../ui/Pagination';
 import { cuidadorSolicitudService } from '../../services/api/cuidadorSolicitudAPI';
+import { ratingsService } from '../../services/api/ratingsAPI';
 import {
   ClipboardList, CheckCircle2, XCircle, Search,
-  Filter, Calendar, MapPin, Tag, Clock, FileText, User
+  Filter, Calendar, MapPin, Tag, Clock, FileText, User, Star
 } from 'lucide-react';
 
 const HistorialSection = ({ cuidador }) => {
   const [solicitudes, setSolicitudes] = useState([]);
+  const [ratingsMap, setRatingsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
-    const loadHistorial = async () => {
+    const loadHistorialAndRatings = async () => {
       try {
         setLoading(true);
-        const data = await cuidadorSolicitudService.getMisSolicitudes();
+        const [solicitudesData, ratingsData] = await Promise.all([
+          cuidadorSolicitudService.getMisSolicitudes(),
+          cuidador?.cuidadorID ? ratingsService.getRatingsByCuidador(cuidador.cuidadorID) : Promise.resolve([])
+        ]);
+
         // Filtrar solo terminadas, canceladas o rechazadas
-        const historial = data.filter(s =>
+        const historial = solicitudesData.filter(s =>
           ['Finalizada', 'Cancelada', 'Rechazada'].includes(s.estado)
         );
         setSolicitudes(historial);
+
+        // Crear mapa de ratings por RequestId para acceso rápido
+        // ratingsData puede ser null si no hay ratings o error
+        const map = {};
+        if (Array.isArray(ratingsData)) {
+          ratingsData.forEach(r => {
+            map[r.requestId] = r;
+          });
+        }
+        setRatingsMap(map);
+
       } catch (err) {
-        setError(err.message);
+        console.error("Error cargando historial/ratings:", err);
+        // No fallamos todo si solo fallan los ratings, pero mostramos error si fallan solicitudes
+        if (!solicitudes.length) setError("No se pudo cargar el historial completo.");
       } finally {
         setLoading(false);
       }
     };
-    loadHistorial();
-  }, []);
+
+    if (cuidador) {
+      loadHistorialAndRatings();
+    }
+  }, [cuidador]);
 
   const paginatedHistorial = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -59,13 +81,14 @@ const HistorialSection = ({ cuidador }) => {
     return styles[estado] || 'bg-slate-50 text-slate-400 border-slate-100';
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500"></div>
-        <span className="ml-3 text-slate-600 font-bold">Cargando historial...</span>
-      </div>
-    );
+  const calculateTotal = (s) => {
+    // Si tuviéramos tarifa aquí sería s.duracionHoras * tarifa.
+    // Como no tenemos la tarifa histórica en la solicitud, usaremos la tarifa actual del cuidador como aproximación
+    // O idealmente el backend debería devolver el "MontoTotal".
+    // Por ahora mostraremos solo horas.
+    return null;
+    // Nota: Para mostrar "Cuánto se pagó", necesitamos que el backend devuelva el monto total guardado o calcularlo.
+    // Usaremos la tarifa del perfil del cuidador actual * horas.
   }
 
   return (
@@ -110,74 +133,91 @@ const HistorialSection = ({ cuidador }) => {
               </div>
             ) : (
               <div className="space-y-6">
-                {paginatedHistorial.map((s) => (
-                  <div key={s.solicitudID} className="bg-white border-2 border-slate-50 rounded-[2rem] p-6 hover:border-slate-100 transition-all group overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.02] -rotate-12 group-hover:scale-150 transition-transform duration-700">
-                      <ClipboardList className="w-24 h-24" />
-                    </div>
+                {paginatedHistorial.map((s) => {
+                  const rating = ratingsMap[s.solicitudID];
+                  const isRejectedOrCancelled = s.estado === 'Rechazada' || s.estado === 'Cancelada';
+                  // Calcular monto aprox
+                  const monto = (s.duracionHoras * (cuidador?.tarifaPorHora || 0)).toFixed(2);
 
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                          <User className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-800">{s.nombreCliente}</h4>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">#{s.solicitudID}</p>
-                        </div>
+                  return (
+                    <div key={s.solicitudID} className="bg-white border-2 border-slate-50 rounded-[2rem] p-6 hover:border-slate-100 transition-all group overflow-hidden relative">
+                      <div className="absolute top-0 right-0 p-8 opacity-[0.02] -rotate-12 group-hover:scale-150 transition-transform duration-700">
+                        <ClipboardList className="w-24 h-24" />
                       </div>
-                      <div className={`px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${getStatusBadge(s.estado)}`}>
-                        {s.estado}
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                      <div className="flex items-start space-x-3">
-                        <Calendar className="w-4 h-4 text-emerald-400 mt-0.5" />
-                        <div>
-                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Fecha</p>
-                          <p className="text-xs font-bold text-slate-600">{formatDate(s.fechaHoraInicio)}</p>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                            <User className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-800">{s.nombreCliente}</h4>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">#{s.solicitudID}</p>
+                          </div>
+                        </div>
+                        <div className={`px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest ${getStatusBadge(s.estado)}`}>
+                          {s.estado}
                         </div>
                       </div>
-                      <div className="flex items-start space-x-3">
-                        <Tag className="w-4 h-4 text-brand-400 mt-0.5" />
-                        <div>
-                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Servicio</p>
-                          <p className="text-xs font-bold text-slate-600">{s.tipoServicio}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <div className={`w-4 h-4 rounded-full mt-0.5 ${s.modoPago === 'Fisico' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center`}>$</div>
-                        <div>
-                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Pago</p>
-                          <p className="text-xs font-bold text-slate-600">
-                            {s.modoPago || 'PayPal'}
-                            {s.isPaid ? <span className="text-green-600 ml-1">(Pagado)</span> : <span className="text-amber-500 ml-1">(Pendiente)</span>}
-                          </p>
-                        </div>
-                      </div>
-                      {/* Calificación (si existe, idealmente deberíamos traerla, por ahora mostramos si está calificado) */}
-                      <div className="flex items-start space-x-3">
-                        <div className={`w-4 h-4 mt-0.5 ${s.isRated ? 'text-yellow-400' : 'text-slate-300'}`}>⭐</div>
-                        <div>
-                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Calificación</p>
-                          <p className="text-xs font-bold text-slate-600">
-                            {s.isRated ? "¡Calificado!" : "Sin calificar"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-start space-x-3">
-                      <FileText className="w-3.5 h-3.5 text-slate-400 mt-1" />
-                      <p className="text-slate-500 text-xs italic">"{s.descripcion}"</p>
-                    </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
+                        <div className="flex items-start space-x-3">
+                          <Calendar className="w-4 h-4 text-emerald-400 mt-0.5" />
+                          <div>
+                            <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Fecha</p>
+                            <p className="text-xs font-bold text-slate-600">{formatDate(s.fechaHoraInicio)}</p>
+                          </div>
+                        </div>
 
-                    {/* Sección opcional para mostrar comentario si tuviéramos acceso directo al rating aquí. 
-                        Por ahora, requeriría hacer requests adicionales por cada item, lo cual no es óptimo sin cambiar el backend.
-                        Dejaremos la indicación visual de "Calificado" que ya es un avance. */}
-                  </div>
-                ))}
+                        <div className="flex items-start space-x-3">
+                          <Tag className="w-4 h-4 text-brand-400 mt-0.5" />
+                          <div>
+                            <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Servicio</p>
+                            <p className="text-xs font-bold text-slate-600">{s.tipoServicio}</p>
+                          </div>
+                        </div>
+
+                        {/* Información de Pago (Oculta si no es finalizada) */}
+                        {!isRejectedOrCancelled && (
+                          <div className="flex items-start space-x-3">
+                            <div className={`w-4 h-4 rounded-full mt-0.5 ${s.modoPago === 'Fisico' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center`}>$</div>
+                            <div>
+                              <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Pago ({s.modoPago || 'PayPal'})</p>
+                              <p className="text-xs font-bold text-slate-600">
+                                ${monto} <span className="text-slate-400 font-normal">({s.duracionHoras}h)</span>
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Sección de Calificación y Comentarios (Solo finalizadas) */}
+                      {!isRejectedOrCancelled && (
+                        <div className="mt-6 pt-6 border-t border-slate-100">
+                          {rating ? (
+                            <div className="bg-slate-50 rounded-2xl p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center space-x-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className={`w-4 h-4 ${i < rating.score ? 'text-amber-400 fill-current' : 'text-slate-200'}`} />
+                                  ))}
+                                  <span className="ml-2 text-xs font-bold text-slate-700">{rating.score}/5</span>
+                                </div>
+                              </div>
+                              {rating.comment && (
+                                <p className="text-sm text-slate-600 italic">"{rating.comment}"</p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-center p-4 border border-dashed border-slate-200 rounded-2xl">
+                              <p className="text-xs text-slate-400 font-medium">El cliente aún no ha calificado este servicio.</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 

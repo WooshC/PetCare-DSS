@@ -182,20 +182,22 @@ const SolicitudCard = ({ solicitud, onAsignarCuidador, onCancelarSolicitud, onCa
           <div className="flex-1 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
             <p className="text-slate-600 text-sm italic leading-relaxed">"{solicitud.descripcion}"</p>
           </div>
-          <div className={`p-4 rounded-2xl border flex items-center justify-between gap-4 md:w-64 ${solicitud.modoPago === 'Fisico' ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100'}`}>
-            <div className="flex items-center gap-3">
-              {solicitud.modoPago === 'Fisico' ? <DollarSign className="w-5 h-5 text-green-600" /> : <CreditCard className="w-5 h-5 text-blue-600" />}
-              <div>
-                <p className="text-[10px] uppercase font-black tracking-wider opacity-60">Pago</p>
-                <p className="text-sm font-bold">{solicitud.modoPago || 'PayPal'}</p>
+          {solicitud.estado !== 'Rechazada' && solicitud.estado !== 'Cancelada' && (
+            <div className={`p-4 rounded-2xl border flex items-center justify-between gap-4 md:w-64 ${solicitud.modoPago === 'Fisico' ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100'}`}>
+              <div className="flex items-center gap-3">
+                {solicitud.modoPago === 'Fisico' ? <DollarSign className="w-5 h-5 text-green-600" /> : <CreditCard className="w-5 h-5 text-blue-600" />}
+                <div>
+                  <p className="text-[10px] uppercase font-black tracking-wider opacity-60">Pago</p>
+                  <p className="text-sm font-bold">{solicitud.modoPago || 'PayPal'}</p>
+                </div>
               </div>
+              {solicitud.isPaid ? (
+                <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-bold rounded-lg">PAGADO</span>
+              ) : (
+                <span className="px-2 py-1 bg-slate-200 text-slate-600 text-xs font-bold rounded-lg">PENDIENTE</span>
+              )}
             </div>
-            {solicitud.isPaid ? (
-              <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-bold rounded-lg">PAGADO</span>
-            ) : (
-              <span className="px-2 py-1 bg-slate-200 text-slate-600 text-xs font-bold rounded-lg">PENDIENTE</span>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Expanded Content */}
