@@ -36,17 +36,13 @@ namespace PetCareServicios.Services
 
             var responses = _mapper.Map<List<CuidadorResponse>>(cuidadores);
 
-            // Sincronizar calificaciones y enriquecer con datos del usuario para todos los cuidadores activos
-            foreach (var cuidador in cuidadores)
-            {
-                await SyncRatingAsync(cuidador);
-            }
+            // Sincronizar calificaciones en paralelo
+            var ratingTasks = cuidadores.Select(c => SyncRatingAsync(c));
+            await Task.WhenAll(ratingTasks);
             
-            // Enriquecer cada respuesta con datos del usuario (sin token para listado público)
-            foreach (var response in responses)
-            {
-                await EnriquecerConDatosDelUsuarioAsync(response, null);
-            }
+            // Enriquecer todas las respuestas con datos del usuario en paralelo
+            var enrichmentTasks = responses.Select(response => EnriquecerConDatosDelUsuarioAsync(response, null));
+            await Task.WhenAll(enrichmentTasks);
 
             return responses;
         }

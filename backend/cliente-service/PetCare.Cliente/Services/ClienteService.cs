@@ -43,11 +43,9 @@ namespace PetCareServicios.Services
             var clientes = await _context.Clientes.Where(c => c.Estado == "Activo").ToListAsync();
             var responses = _mapper.Map<List<ClienteResponse>>(clientes);
             
-            // Enriquecer cada respuesta con datos del usuario
-            foreach (var response in responses)
-            {
-                await EnriquecerConDatosDelUsuarioAsync(response);
-            }
+            // Enriquecer todas las respuestas en paralelo para mejor rendimiento
+            var enrichmentTasks = responses.Select(response => EnriquecerConDatosDelUsuarioAsync(response));
+            await Task.WhenAll(enrichmentTasks);
             
             return responses;
         }
