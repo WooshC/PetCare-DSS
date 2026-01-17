@@ -98,6 +98,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Servicios
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 
 var app = builder.Build();

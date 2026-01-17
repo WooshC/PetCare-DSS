@@ -180,9 +180,10 @@ namespace PetCareServicios.Controllers
 
         /// <summary>
         /// Obtener información de un usuario específico
+        /// Permite acceso anónimo para llamadas internas entre servicios
         /// </summary>
         [HttpGet("users/{id}")]
-        [Authorize]
+        [AllowAnonymous] // Permitir acceso interno desde otros microservicios que no pasan token
         public async Task<ActionResult<UserInfoResponse>> GetUserById(int id)
         {
             try
