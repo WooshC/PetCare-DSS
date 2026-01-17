@@ -200,6 +200,26 @@ public async Task<ActionResult<SolicitudResponse>> CreateSolicitud([FromBody] So
             }
         }
 
+        // POST: api/solicitudcliente/{id}/marcar-calificada
+        [HttpPost("{id}/marcar-calificada")]
+        public async Task<ActionResult> MarcarCalificada(int id)
+        {
+            try
+            {
+                var result = await _solicitudService.MarkAsRatedAsync(id);
+                if (!result)
+                {
+                    return NotFound(new { message = "Solicitud no encontrada" });
+                }
+
+                return Ok(new { message = "Solicitud marcada como calificada exitosamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+            }
+        }
+
         // POST: api/solicitudcliente/{id}/cancelar
         [HttpPost("{id}/cancelar")]
         public async Task<ActionResult> CancelarSolicitud(int id)
