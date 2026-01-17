@@ -172,6 +172,30 @@ using (var scope = app.Services.CreateScope())
                 // Aplicar migraciones directamente (crea la BD si no existe)
                 await cuidadorContext.Database.MigrateAsync();
                 Console.WriteLine($"✅ Migraciones aplicadas exitosamente a CuidadorDbContext");
+
+                // Migrar Auditoría
+                var auditDb = services.GetRequiredService<PetCare.Shared.Data.AuditDbContext>();
+                try { await auditDb.Database.MigrateAsync(); } catch { Console.WriteLine("⚠️ EF Migrate falló, usando SQL directo..."); }
+                
+                string sql = @"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditLogs')
+                BEGIN
+                    CREATE TABLE [AuditLogs] (
+                        [Id] uniqueidentifier NOT NULL PRIMARY KEY,
+                        [UserId] nvarchar(100) NULL,
+                        [Action] nvarchar(100) NOT NULL,
+                        [EntityName] nvarchar(200) NOT NULL,
+                        [EntityId] nvarchar(max) NULL,
+                        [Timestamp] datetime2 NOT NULL,
+                        [OldValues] nvarchar(max) NULL,
+                        [NewValues] nvarchar(max) NULL,
+                        [IpAddress] nvarchar(max) NULL,
+                        [UserAgent] nvarchar(max) NULL
+                    );
+                END";
+                await cuidadorContext.Database.ExecuteSqlRawAsync(sql); // Ejecutamos sobre contexto principal
+                Console.WriteLine("✅ Tabla AuditLogs asegurada (SQL Directo)");
+
                 break; // Salir del bucle si es exitoso
             }
             catch (Exception ex)

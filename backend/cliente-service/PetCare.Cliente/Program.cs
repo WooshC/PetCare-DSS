@@ -120,19 +120,73 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Aplicar migraciones automáticas con feedback
+// Aplicar migraciones automáticas con reintentos robustos
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ClienteDbContext>();
+    var services = scope.ServiceProvider;
     try
     {
         Console.WriteLine("🔄 Iniciando aplicación de migraciones...");
-        db.Database.Migrate();
-        Console.WriteLine("✅ Migraciones aplicadas exitosamente a ClienteDbContext");
+        var db = services.GetRequiredService<ClienteDbContext>();
+        var auditDb = services.GetRequiredService<PetCare.Shared.Data.AuditDbContext>();
+
+        int maxRetries = 10; // Aumentamos a 10 para dar suficiente tiempo al SQL Server
+        int currentRetry = 0;
+
+        while (currentRetry < maxRetries)
+        {
+            try
+            {
+                Console.WriteLine($"📊 Aplicando migraciones (intento {currentRetry + 1}/{maxRetries})...");
+                
+                // 1. Migrar ClienteDB
+                await db.Database.MigrateAsync();
+                Console.WriteLine("✅ Migraciones aplicadas exitosamente a ClienteDbContext");
+
+                // 2. Migrar AuditDB
+                Console.WriteLine("📊 Aplicando migraciones a AuditDbContext...");
+                try { await auditDb.Database.MigrateAsync(); } catch { Console.WriteLine("⚠️ EF Migrate falló, usando SQL directo..."); }
+
+                // FUERZA BRUTA
+                string sql = @"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditLogs')
+                BEGIN
+                    CREATE TABLE [AuditLogs] (
+                        [Id] uniqueidentifier NOT NULL PRIMARY KEY,
+                        [UserId] nvarchar(100) NULL,
+                        [Action] nvarchar(100) NOT NULL,
+                        [EntityName] nvarchar(200) NOT NULL,
+                        [EntityId] nvarchar(max) NULL,
+                        [Timestamp] datetime2 NOT NULL,
+                        [OldValues] nvarchar(max) NULL,
+                        [NewValues] nvarchar(max) NULL,
+                        [IpAddress] nvarchar(max) NULL,
+                        [UserAgent] nvarchar(max) NULL
+                    );
+                END";
+                await db.Database.ExecuteSqlRawAsync(sql); // Ejecutamos sobre db principal
+                Console.WriteLine("✅ Tabla AuditLogs asegurada (SQL Directo)");
+
+                break; // Éxito total
+            }
+            catch (Exception ex)
+            {
+                currentRetry++;
+                Console.WriteLine($"⚠️ Intento {currentRetry}/{maxRetries} falló: {ex.Message}");
+                
+                if (currentRetry >= maxRetries) throw; // Rendirse
+
+                int waitTime = 5; // Espera fija de 5 segundos es más predecible que exponencial para inicio de contenedores
+                Console.WriteLine($"⏳ Esperando {waitTime} segundos antes del siguiente intento...");
+                System.Threading.Thread.Sleep(waitTime * 1000); // Bloqueo sincrono aceptable en startup
+            }
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error al aplicar migraciones: {ex.Message}");
-        throw;
+        Console.WriteLine($"❌ Error FATAL al aplicar migraciones: {ex.Message}");
+        // No lanzamos (throw) para permitir que el contenedor siga vivo y pueda reintentar manualmente si se desea,
+        // aunque lo ideal en prod es que muera. Para desarrollo, mejor ver el log.
     }
 }
 

@@ -64,11 +64,65 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Auto migration for demo purposes
+// Auto migration with Retry Logic
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
-    db.Database.EnsureCreated();
+    var services = scope.ServiceProvider;
+    try 
+    {
+        var db = services.GetRequiredService<PaymentDbContext>();
+        var auditDb = services.GetRequiredService<PetCare.Shared.Data.AuditDbContext>();
+        
+        int maxRetries = 10;
+        int currentRetry = 0;
+
+        while (currentRetry < maxRetries)
+        {
+            try
+            {
+                Console.WriteLine($"📊 Inicializando BD Payment (intento {currentRetry + 1}/{maxRetries})...");
+                db.Database.EnsureCreated(); // Mantenemos EnsureCreated como estaba originalmente
+                Console.WriteLine("✅ PaymentDbContext inicializado");
+
+                Console.WriteLine("📊 Migrando Auditoría...");
+                // Intentamos migrar normal
+                try { await auditDb.Database.MigrateAsync(); } catch { Console.WriteLine("⚠️ EF Migrate falló, usando SQL directo..."); }
+
+                // FUERZA BRUTA: Crear tabla si no existe
+                string sql = @"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditLogs')
+                BEGIN
+                    CREATE TABLE [AuditLogs] (
+                        [Id] uniqueidentifier NOT NULL PRIMARY KEY,
+                        [UserId] nvarchar(100) NULL,
+                        [Action] nvarchar(100) NOT NULL,
+                        [EntityName] nvarchar(200) NOT NULL,
+                        [EntityId] nvarchar(max) NULL,
+                        [Timestamp] datetime2 NOT NULL,
+                        [OldValues] nvarchar(max) NULL,
+                        [NewValues] nvarchar(max) NULL,
+                        [IpAddress] nvarchar(max) NULL,
+                        [UserAgent] nvarchar(max) NULL
+                    );
+                END";
+                await db.Database.ExecuteSqlRawAsync(sql);
+                Console.WriteLine("✅ Tabla AuditLogs asegurada (SQL Directo)");
+                
+                break;
+            }
+            catch (Exception ex)
+            {
+                currentRetry++;
+                Console.WriteLine($"⚠️ Intento {currentRetry}/{maxRetries} falló: {ex.Message}");
+                if (currentRetry >= maxRetries) throw;
+                System.Threading.Thread.Sleep(5000);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+         Console.WriteLine($"❌ Error FATAL inicializando Payment DB: {ex.Message}");
+    }
 }
 
 // Configure URLs for Docker
