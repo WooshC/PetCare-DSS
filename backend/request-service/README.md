@@ -27,7 +27,7 @@ graph TD
     Service -->|Persistencia| Repo
     
     Repo -->|SQL| DB
-    Service -.->|Publica Eventos (Futuro)| RabbitMQ
+    Service -.->|Publica Eventos - Futuro| RabbitMQ
 
     %% Nota
     ServiceNote["📝 Estados de Solicitud:<br/>- Pendiente<br/>- Aceptada<br/>- En Progreso<br/>- Finalizada<br/>- Cancelada"]
@@ -38,7 +38,7 @@ graph TD
     classDef db fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
-    classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5,color:#333
+    classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray:5 5,color:#333
 
     class Service,Repo,Mapper component
     class SolCtrl api

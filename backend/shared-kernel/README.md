@@ -50,6 +50,7 @@ classDiagram
     classDef service fill:#bbdefb,stroke:#1976d2,stroke-width:1px
     classDef middleware fill:#ffe0b2,stroke:#f57c00,stroke-width:1px
     classDef model fill:#c8e6c9,stroke:#388e3c,stroke-width:1px
+    classDef interfaceStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
 
     class AuditMiddleware:::middleware {
         +InvokeAsync(HttpContext context)
@@ -68,7 +69,8 @@ classDiagram
         +string Detalles
     }
 
-    interface IAuditService {
+    class IAuditService:::interfaceStyle {
+        <<interface>>
         +LogAsync(AuditEntry entry)
     }
 
