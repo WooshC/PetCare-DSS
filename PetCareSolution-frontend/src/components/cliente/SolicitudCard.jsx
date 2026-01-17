@@ -123,17 +123,12 @@ const SolicitudCard = ({ solicitud, onAsignarCuidador, onCancelarSolicitud, onCa
                     Pagar
                   </button>
                 )}
-                {!solicitud.isRated ? (
+                {!solicitud.isRated && (
                   <button
                     onClick={() => onCalificar(solicitud)}
                     className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-purple-100"
                   >
                     Calificar
-                  </button>
-                ) : (
-                  <button disabled className="px-6 py-2.5 bg-slate-100 text-slate-400 rounded-xl font-bold text-sm cursor-not-allowed flex items-center">
-                    <Star className="w-4 h-4 mr-2" fill="currentColor" />
-                    Calificado
                   </button>
                 )}
               </>

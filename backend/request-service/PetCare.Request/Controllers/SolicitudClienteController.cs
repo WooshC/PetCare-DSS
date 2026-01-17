@@ -72,6 +72,11 @@ public async Task<ActionResult<SolicitudResponse>> CreateSolicitud([FromBody] So
         
         return CreatedAtAction(nameof(GetSolicitud), new { id = solicitud.SolicitudID }, solicitud);
     }
+    catch (InvalidOperationException ex)
+    {
+        // Esto maneja errores de validación (por ejemplo, pagos pendientes)
+        return BadRequest(new { message = ex.Message });
+    }
     catch (Exception ex)
     {
         return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
