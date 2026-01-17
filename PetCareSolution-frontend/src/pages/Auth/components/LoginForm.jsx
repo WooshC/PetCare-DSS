@@ -116,14 +116,14 @@ const LoginForm = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden px-4 py-12">
       {/* Decorative Bubbles */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-200/20 rounded-full blur-[120px] animate-pulse"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-200/20 rounded-full blur-[120px] animate-pulse"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-200/20 rounded-full blur-[120px] animate-pulse delay-700"></div>
 
       <div className="max-w-md w-full relative z-10">
         <div className="text-center mb-10">
           <Link to="/Home" className="inline-flex items-center space-x-3 group">
             <div className="bg-slate-900 p-3 rounded-2xl shadow-xl transform group-hover:rotate-12 transition-transform duration-300">
-              <Shield className="h-6 w-6 text-brand-400" />
+              <Shield className="h-6 w-6 text-indigo-400" />
             </div>
             <div className="text-left">
               <span className="text-2xl font-black text-slate-800 tracking-tight block leading-none">PetCare</span>
@@ -133,7 +133,7 @@ const LoginForm = () => {
         </div>
 
         <div className="bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-white p-10 relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-brand-500 via-emerald-500 to-brand-500 opacity-20"></div>
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-emerald-500 to-indigo-500 opacity-20"></div>
 
           <div className="mb-8">
             <h2 className="text-3xl font-black text-slate-800 tracking-tighter">Acceso Seguro</h2>
@@ -151,7 +151,7 @@ const LoginForm = () => {
                   onChange={handleChange}
                   error={errors.email}
                   placeholder="ejemplo@petcare.com"
-                  icon={<Mail className="h-5 w-5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />}
+                  icon={<Mail className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />}
                   className="bg-slate-50/50 border-slate-100 rounded-2xl"
                 />
               </div>
@@ -165,7 +165,7 @@ const LoginForm = () => {
                   onChange={handleChange}
                   error={errors.password}
                   placeholder="••••••••"
-                  icon={<Lock className="h-5 w-5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />}
+                  icon={<Lock className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />}
                   className="bg-slate-50/50 border-slate-100 rounded-2xl"
                 />
                 <button
@@ -188,16 +188,16 @@ const LoginForm = () => {
                   type="button"
                   onClick={() => setSelectedRole('cuidador')}
                   className={`p-5 rounded-3xl border-2 transition-all flex flex-col items-center group relative overflow-hidden ${selectedRole === 'cuidador'
-                    ? 'border-brand-500 bg-brand-50/50 shadow-lg shadow-brand-100/50'
+                    ? 'border-indigo-500 bg-indigo-50/50 shadow-lg shadow-indigo-100/50'
                     : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
                     }`}
                 >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${selectedRole === 'cuidador' ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-400'
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${selectedRole === 'cuidador' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-400'
                     }`}>
                     <PawPrint className="w-6 h-6" />
                   </div>
-                  <span className={`text-xs font-black uppercase tracking-widest ${selectedRole === 'cuidador' ? 'text-brand-600' : 'text-slate-400'}`}>Cuidador</span>
-                  {selectedRole === 'cuidador' && <div className="absolute top-2 right-2 w-2 h-2 bg-brand-500 rounded-full"></div>}
+                  <span className={`text-xs font-black uppercase tracking-widest ${selectedRole === 'cuidador' ? 'text-indigo-600' : 'text-slate-400'}`}>Cuidador</span>
+                  {selectedRole === 'cuidador' && <div className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full"></div>}
                 </button>
 
                 <button
@@ -246,7 +246,7 @@ const LoginForm = () => {
             <div className="text-center pt-4">
               <p className="text-slate-500 text-sm font-medium">
                 ¿Nuevo en PetCare?{' '}
-                <Link to="/register" className="text-brand-600 hover:underline font-black">Crea tu cuenta gratis</Link>
+                <Link to="/register" className="text-indigo-600 hover:underline font-black">Crea tu cuenta gratis</Link>
               </p>
             </div>
           </form>
