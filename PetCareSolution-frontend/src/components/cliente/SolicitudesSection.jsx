@@ -48,9 +48,9 @@ const SolicitudesSection = () => {
         totalFinalizadas
     } = useClienteSolicitudes();
 
-    // Filtrar solicitudes activas (no finalizadas ni canceladas)
+    // Filtrar solicitudes activas (no finalizadas ni canceladas ni rechazadas)
     const activeSolicitudes = useMemo(() => {
-        return solicitudes.filter(s => s.estado !== 'Finalizada' && s.estado !== 'Cancelada');
+        return solicitudes.filter(s => s.estado !== 'Finalizada' && s.estado !== 'Cancelada' && s.estado !== 'Rechazada');
     }, [solicitudes]);
 
     // Paginated solicitudes

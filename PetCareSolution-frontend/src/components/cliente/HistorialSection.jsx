@@ -25,7 +25,7 @@ const HistorialSection = () => {
 
   const historialSolicitudes = useMemo(() => {
     return solicitudes.filter(s =>
-      s.estado === 'Finalizada' || s.estado === 'Cancelada'
+      s.estado === 'Finalizada' || s.estado === 'Cancelada' || s.estado === 'Rechazada'
     );
   }, [solicitudes]);
 

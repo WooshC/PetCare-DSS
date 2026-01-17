@@ -8,7 +8,11 @@ import HistorialSection from './HistorialSection';
 import { useClienteSolicitudes } from '../../hooks/useClienteSolicitudes';
 
 const ClienteMain = ({ onLogout }) => {
-  const [currentSection, setCurrentSection] = useState('perfil');
+  // Leer parámetro de URL para navegación directa
+  const queryParams = new URLSearchParams(window.location.search);
+  const initialSection = queryParams.get('section') || 'perfil';
+
+  const [currentSection, setCurrentSection] = useState(initialSection);
   const [cliente, setCliente] = useState(null);
   const [loading, setLoading] = useState(true);
 

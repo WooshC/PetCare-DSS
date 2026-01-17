@@ -131,19 +131,12 @@ const HistorialSection = ({ cuidador }) => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                       <div className="flex items-start space-x-3">
                         <Calendar className="w-4 h-4 text-emerald-400 mt-0.5" />
                         <div>
                           <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Fecha</p>
                           <p className="text-xs font-bold text-slate-600">{formatDate(s.fechaHoraInicio)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3">
-                        <MapPin className="w-4 h-4 text-red-400 mt-0.5" />
-                        <div>
-                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Ubicación</p>
-                          <p className="text-xs font-bold text-slate-600 line-clamp-1">{s.ubicacion}</p>
                         </div>
                       </div>
                       <div className="flex items-start space-x-3">
@@ -153,12 +146,36 @@ const HistorialSection = ({ cuidador }) => {
                           <p className="text-xs font-bold text-slate-600">{s.tipoServicio}</p>
                         </div>
                       </div>
+                      <div className="flex items-start space-x-3">
+                        <div className={`w-4 h-4 rounded-full mt-0.5 ${s.modoPago === 'Fisico' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center`}>$</div>
+                        <div>
+                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Pago</p>
+                          <p className="text-xs font-bold text-slate-600">
+                            {s.modoPago || 'PayPal'}
+                            {s.isPaid ? <span className="text-green-600 ml-1">(Pagado)</span> : <span className="text-amber-500 ml-1">(Pendiente)</span>}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Calificación (si existe, idealmente deberíamos traerla, por ahora mostramos si está calificado) */}
+                      <div className="flex items-start space-x-3">
+                        <div className={`w-4 h-4 mt-0.5 ${s.isRated ? 'text-yellow-400' : 'text-slate-300'}`}>⭐</div>
+                        <div>
+                          <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Calificación</p>
+                          <p className="text-xs font-bold text-slate-600">
+                            {s.isRated ? "¡Calificado!" : "Sin calificar"}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-start space-x-3">
                       <FileText className="w-3.5 h-3.5 text-slate-400 mt-1" />
                       <p className="text-slate-500 text-xs italic">"{s.descripcion}"</p>
                     </div>
+
+                    {/* Sección opcional para mostrar comentario si tuviéramos acceso directo al rating aquí. 
+                        Por ahora, requeriría hacer requests adicionales por cada item, lo cual no es óptimo sin cambiar el backend.
+                        Dejaremos la indicación visual de "Calificado" que ya es un avance. */}
                   </div>
                 ))}
               </div>

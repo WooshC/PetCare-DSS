@@ -173,6 +173,19 @@ export const clienteSolicitudService = {
       console.error("Error marking as paid:", error);
       throw error;
     }
+  },
+
+  // Helper manual: Marca la solicitud como calificada en el backend (solo solicitud-service)
+  // Esto se usa como fallback si la sincronización backend-to-backend falla.
+  markAsRated: async (solicitudId) => {
+    try {
+      await clienteSolicitudApi.post(`/SolicitudCliente/${solicitudId}/marcar-calificada`);
+      return true;
+    } catch (error) {
+      console.error("Error marking as rated:", error);
+      // No lanzamos error para no interrumpir el flujo visual, ya que es una acción secundaria
+      return false;
+    }
   }
 };
 

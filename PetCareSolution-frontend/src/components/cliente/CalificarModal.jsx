@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, X, MessageSquare, Send, Sparkles } from 'lucide-react';
 import { ratingsService } from '../../services/api';
+import { clienteSolicitudService } from '../../services/api/clienteSolicitudAPI';
 
 const CalificarModal = ({ solicitud, onClose, onSuccess }) => {
     const [calificacion, setCalificacion] = useState(0);
@@ -35,6 +36,10 @@ const CalificarModal = ({ solicitud, onClose, onSuccess }) => {
             };
 
             await ratingsService.createRating(token, ratingData);
+
+            // Asegurar que se marque como calificada también en el servicio de solicitudes
+            // Se llama como fallback del backend
+            await clienteSolicitudService.markAsRated(solicitud.solicitudID);
 
             // Éxito
             onSuccess();
