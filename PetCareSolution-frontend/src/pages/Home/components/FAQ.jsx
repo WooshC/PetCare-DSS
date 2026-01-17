@@ -9,7 +9,7 @@ const FAQ = () => {
     {
       icon: ShieldCheck,
       question: "¿Cómo se verifican los cuidadores?",
-      answer: "Cada profesional atraviesa un protocolo de 'PetCare Trust' que incluye background check legal, entrevista técnica de comportamiento animal y validación biométrica de identidad."
+      answer: "Cada profesional atraviesa un protocolo de seguridad donde un administrador o gestor del sistema se encarga de validar rigurosamente sus documentos de identidad antes de ser activado en la plataforma."
     },
     {
       icon: MessageCircleQuestion,
@@ -48,8 +48,8 @@ const FAQ = () => {
             <div
               key={index}
               className={`group rounded-[2.5rem] transition-all duration-500 overflow-hidden border ${openIndex === index
-                  ? 'bg-white shadow-2xl shadow-slate-200 border-brand-200 scale-105 z-10'
-                  : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'
+                ? 'bg-white shadow-2xl shadow-slate-200 border-brand-200 scale-105 z-10'
+                : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'
                 }`}
             >
               <button
