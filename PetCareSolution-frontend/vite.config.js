@@ -10,7 +10,10 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Deshabilitar sourcemaps para evitar exponer código fuente
+    esbuild: {
+      drop: ['console', 'debugger'], // Elimina todos los console.* y debugger del build
+    },
   },
   resolve: {
     alias: {
