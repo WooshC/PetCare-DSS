@@ -114,19 +114,23 @@ const SolicitudCard = ({ solicitud, onAsignarCuidador, onCancelarSolicitud, onCa
 
             {solicitud.estado === 'Finalizada' && (
               <>
-                <button
-                  onClick={() => navigate(`/cliente/pago/${solicitud.solicitudID}`)}
-                  className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-emerald-200 flex items-center"
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Pagar
-                </button>
-                <button
-                  onClick={() => onCalificar(solicitud)}
-                  className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-purple-100"
-                >
-                  Calificar
-                </button>
+                {!solicitud.isPaid && (
+                  <button
+                    onClick={() => navigate(`/cliente/pago/${solicitud.solicitudID}`)}
+                    className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-emerald-200 flex items-center"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Pagar
+                  </button>
+                )}
+                {!solicitud.isRated && (
+                  <button
+                    onClick={() => onCalificar(solicitud)}
+                    className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-lg shadow-purple-100"
+                  >
+                    Calificar
+                  </button>
+                )}
               </>
             )}
 
@@ -173,9 +177,27 @@ const SolicitudCard = ({ solicitud, onAsignarCuidador, onCancelarSolicitud, onCa
           </div>
         </div>
 
-        {/* Description Section */}
-        <div className="mt-6 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
-          <p className="text-slate-600 text-sm italic leading-relaxed">"{solicitud.descripcion}"</p>
+        {/* Description and Payment Mode Section */}
+        <div className="mt-6 flex flex-col md:flex-row gap-4">
+          <div className="flex-1 p-4 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+            <p className="text-slate-600 text-sm italic leading-relaxed">"{solicitud.descripcion}"</p>
+          </div>
+          {solicitud.estado !== 'Rechazada' && solicitud.estado !== 'Cancelada' && (
+            <div className={`p-4 rounded-2xl border flex items-center justify-between gap-4 md:w-64 ${solicitud.modoPago === 'Fisico' ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100'}`}>
+              <div className="flex items-center gap-3">
+                {solicitud.modoPago === 'Fisico' ? <DollarSign className="w-5 h-5 text-green-600" /> : <CreditCard className="w-5 h-5 text-blue-600" />}
+                <div>
+                  <p className="text-[10px] uppercase font-black tracking-wider opacity-60">Pago</p>
+                  <p className="text-sm font-bold">{solicitud.modoPago || 'PayPal'}</p>
+                </div>
+              </div>
+              {solicitud.isPaid ? (
+                <span className="px-2 py-1 bg-green-200 text-green-800 text-xs font-bold rounded-lg">PAGADO</span>
+              ) : (
+                <span className="px-2 py-1 bg-slate-200 text-slate-600 text-xs font-bold rounded-lg">PENDIENTE</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Expanded Content */}

@@ -39,14 +39,14 @@ export const clienteSolicitudService = {
   getMisSolicitudes: async () => {
     try {
       const response = await clienteSolicitudApi.get('/SolicitudCliente/mis-solicitudes');
-      return Array.isArray(response.data) 
+      return Array.isArray(response.data)
         ? response.data.map(s => new SolicitudResponse(s))
         : [];
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al obtener solicitudes';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al obtener solicitudes';
       throw new Error(errorMessage);
     }
   },
@@ -61,10 +61,10 @@ export const clienteSolicitudService = {
         message: 'Solicitud obtenida exitosamente'
       };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al obtener la solicitud';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al obtener la solicitud';
       throw new Error(errorMessage);
     }
   },
@@ -80,10 +80,10 @@ export const clienteSolicitudService = {
         message: 'Solicitud creada exitosamente'
       };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al crear la solicitud';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al crear la solicitud';
       throw new Error(errorMessage);
     }
   },
@@ -99,14 +99,14 @@ export const clienteSolicitudService = {
         message: 'Solicitud actualizada exitosamente'
       };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al actualizar la solicitud';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al actualizar la solicitud';
       throw new Error(errorMessage);
     }
   },
-  
+
 
   // Asignar cuidador a solicitud
   asignarCuidador: async (solicitudId, cuidadorId) => {
@@ -119,10 +119,10 @@ export const clienteSolicitudService = {
         message: 'Cuidador asignado exitosamente'
       };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al asignar cuidador';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al asignar cuidador';
       throw new Error(errorMessage);
     }
   },
@@ -137,15 +137,15 @@ export const clienteSolicitudService = {
         message: response.data?.message || 'Solicitud cancelada exitosamente'
       };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al cancelar la solicitud';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al cancelar la solicitud';
       throw new Error(errorMessage);
     }
   },
 
-  
+
 
   // Eliminar solicitud
   deleteSolicitud: async (solicitudId) => {
@@ -156,11 +156,35 @@ export const clienteSolicitudService = {
         message: 'Solicitud eliminada exitosamente'
       };
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.error ||
-                          error.message || 
-                          'Error al eliminar la solicitud';
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Error al eliminar la solicitud';
       throw new Error(errorMessage);
+    }
+  },
+
+  markAsPaid: async (solicitudId) => {
+    try {
+      // Use SolicitudController (shared)
+      await clienteSolicitudApi.post(`/Solicitud/${solicitudId}/pagar`);
+      return true;
+    } catch (error) {
+      console.error("Error marking as paid:", error);
+      throw error;
+    }
+  },
+
+  // Helper manual: Marca la solicitud como calificada en el backend (solo solicitud-service)
+  // Esto se usa como fallback si la sincronización backend-to-backend falla.
+  markAsRated: async (solicitudId) => {
+    try {
+      await clienteSolicitudApi.post(`/SolicitudCliente/${solicitudId}/marcar-calificada`);
+      return true;
+    } catch (error) {
+      console.error("Error marking as rated:", error);
+      // No lanzamos error para no interrumpir el flujo visual, ya que es una acción secundaria
+      return false;
     }
   }
 };

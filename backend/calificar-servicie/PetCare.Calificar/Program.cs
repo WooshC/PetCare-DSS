@@ -135,7 +135,7 @@ var app = builder.Build();
 if (app.Environment.EnvironmentName == "Docker")
 {
     app.Urls.Clear();
-    app.Urls.Add("http://0.0.0.0:8083"); // Puerto distinto para evitar conflictos
+    app.Urls.Add("http://0.0.0.0:8080");
 }
 
 app.UseSwagger();

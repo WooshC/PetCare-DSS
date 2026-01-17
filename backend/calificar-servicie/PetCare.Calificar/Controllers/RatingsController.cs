@@ -125,14 +125,13 @@ public async Task<ActionResult<Ratings>> PostRating(Ratings rating)
                 Console.WriteLine($"🌐 Enviando actualización a CuidadorService: {updateRequest.RequestUri}");
 
                 var updateResponse = await _httpClient.SendAsync(updateRequest);
-                var responseBody = await updateResponse.Content.ReadAsStringAsync();
-
                 if (updateResponse.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"✅ Promedio sincronizado exitosamente. Status: {updateResponse.StatusCode}");
                 }
                 else
                 {
+                     var responseBody = await updateResponse.Content.ReadAsStringAsync();
                     Console.WriteLine($"⚠️ Error al sincronizar con CuidadorService: {updateResponse.StatusCode}");
                     Console.WriteLine($"   Cuerpo respuesta: {responseBody}");
                 }
@@ -142,6 +141,36 @@ public async Task<ActionResult<Ratings>> PostRating(Ratings rating)
                 Console.WriteLine($"❌ Error fatal al intentar sincronizar promedio: {ex.Message}");
                 Console.WriteLine($"   Stack: {ex.StackTrace}");
             }
+        }
+
+        // 🚀 NUEVO: MARCAR COMO CALIFICADA EN REQUEST SERVICE
+        try
+        {
+             // Usar PATCH o POST según el endpoint de Request Service para marcar como Rated
+             // Asumiendo que existe un endpoint /api/solicitudcliente/{id}/calificar o similar, o usando un método interno si no existe.
+             // Pero el RequestService tiene MarkAsRatedAsync en su servicio interno, necesitamos exponerlo en el controlador.
+             // Como workaround rápido, si no existe endpoint, lo agregamos en el siguiente paso.
+             // Asumiremos que vamos a crear el endpoint: POST /api/solicitudcliente/{id}/marcar-calificada
+
+             var markRatedUrl = $"{_solicitudesServiceUrl}/{rating.RequestId}/marcar-calificada";
+             var markRequest = new HttpRequestMessage(HttpMethod.Post, markRatedUrl);
+             markRequest.Headers.Add("Authorization", token);
+
+             Console.WriteLine($"🌐 Marcando solicitud como calificada: {markRatedUrl}");
+             var markResponse = await _httpClient.SendAsync(markRequest);
+             
+             if (markResponse.IsSuccessStatusCode)
+             {
+                 Console.WriteLine($"✅ Solicitud {rating.RequestId} marcada como calificada.");
+             }
+             else
+             {
+                 Console.WriteLine($"⚠️ No se pudo marcar como calificada en RequestService: {markResponse.StatusCode}");
+             }
+        }
+        catch (Exception ex)
+        {
+             Console.WriteLine($"❌ Error marcando solicitud como calificada: {ex.Message}");
         }
 
         return CreatedAtAction(nameof(GetRating), new { id = rating.CalificacionID }, rating);

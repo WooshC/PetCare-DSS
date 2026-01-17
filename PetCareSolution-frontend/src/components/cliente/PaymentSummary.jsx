@@ -6,6 +6,7 @@ import {
     CreditCard, ArrowLeft, Receipt, Star
 } from 'lucide-react';
 import { clienteSolicitudService } from '../../services/api/clienteSolicitudAPI';
+import { paymentService } from '../../services/api/paymentAPI';
 
 const PaymentSummary = () => {
     const { solicitudId } = useParams();
@@ -50,11 +51,57 @@ const PaymentSummary = () => {
 
     const handlePayment = async () => {
         setProcessingPayment(true);
-        // Aquí se integrará con PayPal o el método de pago
-        setTimeout(() => {
-            alert('Pago procesado exitosamente!');
-            navigate('/cliente/historial');
-        }, 2000);
+        try {
+            const totalAmount = calculateTotal();
+
+            if (totalAmount <= 0) {
+                console.error("Monto total inválido:", totalAmount, solicitud);
+                alert("Error: El monto a pagar es 0 o inválido. Verifique la tarifa del cuidador.");
+                setProcessingPayment(false);
+                return;
+            }
+
+            const paymentRequest = {
+                SolicitudID: solicitud.solicitudID,
+                Amount: totalAmount,
+                Currency: "USD",
+                Description: `Pago por servicio de cuidado de mascotas #${solicitud.solicitudID}`,
+                ReturnUrl: `${window.location.origin}/cliente/pago-exitoso?solicitudId=${solicitud.solicitudID}`,
+                CancelUrl: `${window.location.origin}/cliente/pago/${solicitudId}`
+            };
+
+            console.log("Iniciando pago con:", paymentRequest);
+
+            const response = await paymentService.createOrder(paymentRequest);
+
+            // Buscar el link "approve"
+            // The response might be the object directly if parsed, or contain 'links'.
+            // Based on PayPal API v2, the response has a 'links' array.
+
+            let links = [];
+            if (response && response.links) {
+                links = response.links;
+            } else if (response && typeof response === 'object' && !response.links) {
+                // In case the response is wrapped differently or parsed weirdly, let's look for 'href' inside immediate properties if needed, 
+                // but standard PayPal SDK/API returns { id, status, links: [] }
+                console.warn("Unexpected PayPal response structure:", response);
+            }
+
+            const approveLink = links.find(link => link.rel === "approve");
+
+            if (approveLink) {
+                // Open in same window to keep flow, or new window? Usually same window for redirect flows.
+                window.location.href = approveLink.href;
+            } else {
+                console.error("PayPal response:", response);
+                throw new Error("No se encontró el enlace de aprobación de PayPal en la respuesta. Por favor intente de nuevo.");
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert("Error al iniciar el pago: " + (err.message || "Error desconocido"));
+            setProcessingPayment(false);
+        }
     };
 
     const formatDate = (dateString) => {

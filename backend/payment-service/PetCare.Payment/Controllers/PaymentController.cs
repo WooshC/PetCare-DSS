@@ -32,6 +32,11 @@ namespace PetCare.Payment.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERROR] CreateOrder failed: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"[ERROR] Inner Exception: {ex.InnerException.Message}");
+                }
                 return BadRequest(new { error = ex.Message });
             }
         }

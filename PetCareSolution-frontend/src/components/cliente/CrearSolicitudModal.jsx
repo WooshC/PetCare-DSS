@@ -10,7 +10,8 @@ const CrearSolicitudModal = ({ isOpen, onClose, onCreateSolicitud, loading }) =>
     fechaHoraInicio: '',
     duracionHoras: 1,
     ubicacion: '',
-    cuidadorID: null
+    cuidadorID: null,
+    modoPago: 'PayPal'
   });
 
   const [errors, setErrors] = useState({});
@@ -169,6 +170,42 @@ const CrearSolicitudModal = ({ isOpen, onClose, onCreateSolicitud, loading }) =>
                   placeholder="Dirección exacta o referencia"
                   className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all font-medium text-slate-700"
                 />
+              </div>
+            </div>
+
+            {/* Método de Pago */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wider">Método de Pago</label>
+              <div className="grid grid-cols-2 gap-4">
+                <label className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all ${formData.modoPago === 'PayPal' ? 'border-blue-500 bg-blue-50' : 'border-slate-100 hover:border-slate-200'}`}>
+                  <input
+                    type="radio"
+                    name="modoPago"
+                    value="PayPal"
+                    checked={formData.modoPago === 'PayPal'}
+                    onChange={handleChange}
+                    className="absolute opacity-0 w-full h-full cursor-pointer inset-0"
+                  />
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-slate-700">PayPal</span>
+                    <span className="text-xs text-slate-500 text-center">Pago online seguro</span>
+                  </div>
+                </label>
+
+                <label className={`relative p-4 border-2 rounded-2xl cursor-pointer transition-all ${formData.modoPago === 'Fisico' ? 'border-green-500 bg-green-50' : 'border-slate-100 hover:border-slate-200'}`}>
+                  <input
+                    type="radio"
+                    name="modoPago"
+                    value="Fisico"
+                    checked={formData.modoPago === 'Fisico'}
+                    onChange={handleChange}
+                    className="absolute opacity-0 w-full h-full cursor-pointer inset-0"
+                  />
+                  <div className="flex flex-col items-center">
+                    <span className="font-bold text-slate-700">Físico / Efectivo</span>
+                    <span className="text-xs text-slate-500 text-center">Acuerdo con cuidador</span>
+                  </div>
+                </label>
               </div>
             </div>
 

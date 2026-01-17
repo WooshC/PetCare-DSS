@@ -34,6 +34,9 @@ export class Solicitud {
     this.fechaAceptacion = data.fechaAceptacion || null;
     this.fechaInicioServicio = data.fechaInicioServicio || null;
     this.fechaFinalizacion = data.fechaFinalizacion || null;
+    this.isPaid = data.isPaid || false;
+    this.isRated = data.isRated || false;
+    this.modoPago = data.modoPago || 'PayPal';
   }
 }
 
@@ -44,11 +47,11 @@ export class SolicitudResponse extends Solicitud {
     this.nombreCliente = data.nombreCliente || '';
     this.emailCliente = data.emailCliente || '';
     this.telefonoCliente = data.telefonoCliente || '';
-    this.nombreCuidador = data.nombreCuidador || '';
-    this.emailCuidador = data.emailCuidador || '';
-    this.telefonoCuidador = data.telefonoCuidador || '';
-    this.tarifaPorHora = data.tarifaPorHora || null;
-    this.calificacionPromedio = data.calificacionPromedio || null;
+    this.nombreCuidador = data.nombreCuidador || data.NombreCuidador || '';
+    this.emailCuidador = data.emailCuidador || data.EmailCuidador || '';
+    this.telefonoCuidador = data.telefonoCuidador || data.TelefonoCuidador || '';
+    this.tarifaPorHora = data.tarifaPorHora || data.TarifaPorHora || null;
+    this.calificacionPromedio = data.calificacionPromedio || data.CalificacionPromedio || null;
   }
 }
 
@@ -62,6 +65,7 @@ export class SolicitudRequest {
     this.fechaHoraInicio = data.fechaHoraInicio || '';
     this.duracionHoras = data.duracionHoras || 0;
     this.ubicacion = data.ubicacion || '';
+    this.modoPago = data.modoPago || 'PayPal';
   }
 }
 

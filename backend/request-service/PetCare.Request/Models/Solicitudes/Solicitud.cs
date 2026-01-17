@@ -45,6 +45,12 @@ namespace PetCareServicios.Models.Solicitudes
 
         public DateTime? FechaFinalizacion { get; set; }
 
+        public bool IsPaid { get; set; } = false;
+        public bool IsRated { get; set; } = false;
+        
+        [StringLength(20)]
+        public string ModoPago { get; set; } = "PayPal"; // "PayPal" (default), "Fisico"
+
         // Nota: No usamos ForeignKey ni Navigation Property porque estamos usando bases de datos separadas
         // La relación se maneja a nivel de aplicación usando ClienteID y CuidadorID
     }

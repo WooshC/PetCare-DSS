@@ -213,6 +213,38 @@ public async Task<ActionResult> CancelarSolicitud(int id)
 
 
 
+        // POST: api/solicitud/{id}/pagar
+        [HttpPost("{id}/pagar")]
+        public async Task<ActionResult> MarkAsPaid(int id)
+        {
+            try
+            {
+                var result = await _solicitudService.MarkAsPaidAsync(id);
+                if (!result) return NotFound(new { message = "Solicitud no encontrada" });
+                return Ok(new { message = "Solicitud marcada como pagada" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno", error = ex.Message });
+            }
+        }
+
+        // POST: api/solicitud/{id}/calificar
+        [HttpPost("{id}/calificar")]
+        public async Task<ActionResult> MarkAsRated(int id)
+        {
+            try
+            {
+                var result = await _solicitudService.MarkAsRatedAsync(id);
+                if (!result) return NotFound(new { message = "Solicitud no encontrada" });
+                return Ok(new { message = "Solicitud marcada como calificada" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno", error = ex.Message });
+            }
+        }
+
         // GET: api/solicitud/test
         [HttpGet("test")]
         [AllowAnonymous]

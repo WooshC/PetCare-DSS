@@ -72,6 +72,11 @@ public async Task<ActionResult<SolicitudResponse>> CreateSolicitud([FromBody] So
         
         return CreatedAtAction(nameof(GetSolicitud), new { id = solicitud.SolicitudID }, solicitud);
     }
+    catch (InvalidOperationException ex)
+    {
+        // Esto maneja errores de validación (por ejemplo, pagos pendientes)
+        return BadRequest(new { message = ex.Message });
+    }
     catch (Exception ex)
     {
         return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
@@ -188,6 +193,26 @@ public async Task<ActionResult<SolicitudResponse>> CreateSolicitud([FromBody] So
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", error = ex.Message });
+            }
+        }
+
+        // POST: api/solicitudcliente/{id}/marcar-calificada
+        [HttpPost("{id}/marcar-calificada")]
+        public async Task<ActionResult> MarcarCalificada(int id)
+        {
+            try
+            {
+                var result = await _solicitudService.MarkAsRatedAsync(id);
+                if (!result)
+                {
+                    return NotFound(new { message = "Solicitud no encontrada" });
+                }
+
+                return Ok(new { message = "Solicitud marcada como calificada exitosamente" });
             }
             catch (Exception ex)
             {

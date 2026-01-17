@@ -8,6 +8,7 @@ import CuidadorMain from './components/cuidador/CuidadorMain';
 import './index.css';
 import ClienteMain from './components/cliente/ClienteMain';
 import PaymentSummary from './components/cliente/PaymentSummary';
+import PaymentSuccess from './components/cliente/PaymentSuccess';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
 
           {/* Ruta de pago */}
           <Route path="/cliente/pago/:solicitudId" element={<PaymentSummary />} />
+          <Route path="/cliente/pago-exitoso" element={<PaymentSuccess />} />
 
           {/* Ruta de fallback - redirige a /Home */}
           <Route path="*" element={<Navigate to="/Home" replace />} />
