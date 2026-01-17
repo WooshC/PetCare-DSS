@@ -129,3 +129,19 @@ services:
       - petcare-request
       - petcare-payment
       - petcare-calificar
+
+  # Gateway Unificado
+  nginx-gateway:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx-gateway.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - petcare-frontend
+      - petcare-auth
+      - petcare-cliente
+      - petcare-cuidador
+      - petcare-request
+      - petcare-payment
+
