@@ -104,35 +104,46 @@ namespace PetCareServicios.Services
             return enrichedResponses;
         }
 
-       public async Task<SolicitudResponse> CreateSolicitudAsync(int usuarioId, SolicitudRequest request, string? authToken = null)
-{
-    var pendingObligations = await _context.Solicitudes
-        .AnyAsync(s => s.ClienteID == usuarioId && s.Estado == "Finalizada" && (!s.IsPaid || !s.IsRated));
-
-    if (pendingObligations)
+    public async Task<SolicitudResponse> CreateSolicitudAsync(int usuarioId, SolicitudRequest request, string? authToken = null)
     {
-        throw new InvalidOperationException("No puedes crear una nueva solicitud porque tienes servicios finalizados pendientes de pago o calificación.");
+        // 1. Validar deudas si el nuevo método es "PayPal" (si es físico, asumimos que pagará en efectivo así que no bloqueamos)
+        // O alternativamente, bloqueamos SIEMPRE si hay deuda anterior, independientemente del método nuevo.
+        // El requerimiento dice: "si elgie físico ya es problema de ellos de solventar". 
+        // Asumiremos que si hay deuda pendiente, NO puede crear NADA hasta pagar la anterior.
+        // Pero si la anterior era "Físico", debe marcarse como pagada manualmente o asumirse pagada?
+        // Revisemos si el pago anterior era obligatorio. Sí.
+        // Mantenemos la regla: DEBE pagar lo anterior.
+        
+        var pendingObligations = await _context.Solicitudes
+            .AnyAsync(s => s.ClienteID == usuarioId && s.Estado == "Finalizada" && (!s.IsPaid || !s.IsRated));
+
+        if (pendingObligations)
+        {
+            throw new InvalidOperationException("No puedes crear una nueva solicitud porque tienes servicios finalizados pendientes de pago o calificación.");
+        }
+
+        var solicitud = new Solicitud
+        {
+            ClienteID = usuarioId,
+            CuidadorID = null,
+            TipoServicio = request.TipoServicio,
+            Descripcion = request.Descripcion,
+            FechaHoraInicio = request.FechaHoraInicio,
+            DuracionHoras = request.DuracionHoras,
+            Ubicacion = request.Ubicacion,
+            Estado = "Pendiente",
+            ModoPago = request.ModoPago, // Nuevo campo
+            IsPaid = request.ModoPago == "Fisico", // Si es físico, nace pagada? No, nace "no pagada" pero se gestiona diferente.
+            // Mejor dejemos IsPaid = false, pero al finalizar, si es Fisico, marcamos IsPaid=true automáticamente o no generamos orden de PayPal.
+            FechaCreacion = DateTime.UtcNow
+        };
+
+        _context.Solicitudes.Add(solicitud);
+        await _context.SaveChangesAsync();
+
+        var response = _mapper.Map<SolicitudResponse>(solicitud);
+        return await EnrichSolicitudWithUserInfo(response, authToken);
     }
-
-    var solicitud = new Solicitud
-    {
-        ClienteID = usuarioId,
-        CuidadorID = null,
-        TipoServicio = request.TipoServicio,
-        Descripcion = request.Descripcion,
-        FechaHoraInicio = request.FechaHoraInicio,
-        DuracionHoras = request.DuracionHoras,
-        Ubicacion = request.Ubicacion,
-        Estado = "Pendiente",
-        FechaCreacion = DateTime.UtcNow
-    };
-
-    _context.Solicitudes.Add(solicitud);
-    await _context.SaveChangesAsync();
-
-    var response = _mapper.Map<SolicitudResponse>(solicitud);
-    return await EnrichSolicitudWithUserInfo(response, authToken);
-}
 
 
         public async Task<SolicitudResponse?> UpdateSolicitudAsync(int id, SolicitudRequest request)
@@ -286,15 +297,28 @@ namespace PetCareServicios.Services
 
             await _context.SaveChangesAsync();
 
-            // Crear orden de pago automáticamente
-            try
+            await _context.SaveChangesAsync();
+            
+            // Si el modo de pago es Físico, marcamos como pagado automáticamente (o no requerimos pago online)
+            if (solicitud.ModoPago == "Fisico")
             {
-                await CrearOrdenPagoAsync(solicitud);
+                solicitud.IsPaid = true;
+                await _context.SaveChangesAsync();
+                return true;
             }
-            catch (Exception ex)
+
+            // Crear orden de pago automáticamente SOLO si es PayPal
+            if (solicitud.ModoPago == "PayPal")
             {
-                Console.WriteLine($"⚠️ Error creando orden de pago para solicitud {id}: {ex.Message}");
-                // No fallar la finalización si el pago falla
+                try
+                {
+                    await CrearOrdenPagoAsync(solicitud);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ Error creando orden de pago para solicitud {id}: {ex.Message}");
+                    // No fallar la finalización si el pago falla
+                }
             }
 
             return true;

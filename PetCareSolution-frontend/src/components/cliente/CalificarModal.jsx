@@ -35,11 +35,20 @@ const CalificarModal = ({ solicitud, onClose, onSuccess }) => {
             };
 
             await ratingsService.createRating(token, ratingData);
+
+            // Éxito
             onSuccess();
             onClose();
         } catch (err) {
             console.error('Error al calificar:', err);
-            setError(err.message || 'No pudimos procesar tu calificación');
+            // Mostrar mensaje limpio al usuario
+            const msg = err.message || 'No pudimos procesar tu calificación';
+            // Si el error es "ya existe una calificación", podríamos considerarlo "éxito" para fines prácticos o mostrarlo
+            if (msg.includes("Ya existe una calificación")) {
+                setError('Ya has calificado esta solicitud anteriormente.');
+            } else {
+                setError(msg);
+            }
         } finally {
             setLoading(false);
         }
