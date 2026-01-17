@@ -42,14 +42,11 @@ const AdminMain = () => {
             let data = [];
             if (activeTab === 'clientes') {
                 data = await adminService.getAllClientes(token);
-            } else if (activeTab === 'cuidadores') {
+            } else {
                 data = await adminService.getAllCuidadores(token);
-            } else if (activeTab === 'usuarios') {
-                // Obtener todos los usuarios desde el servicio de autenticación
-                const response = await adminService.getUsers(token);
-                data = response.datos || response || [];
             }
-            setUsers(data || []);
+            // Asegurar que data sea un array
+            setUsers(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error("Error loading users:", err);
             setError("No se pudieron cargar los usuarios. Verifica tu conexión o credenciales.");
@@ -168,23 +165,14 @@ const AdminMain = () => {
     };
 
     // Filtrar usuarios según la pestaña activa
+    // Filtrar usuarios: mostrar si falta verificar O si está bloqueada
     const filteredUsers = Array.isArray(users) ? users.filter(u => {
-        // Para la pestaña de usuarios (auth), mostrar SOLO cuentas bloqueadas
-        if (activeTab === 'usuarios') {
-            // Filtrar solo usuarios bloqueados
-            if (!u.cuentaBloqueada) return false;
+        // Mostrar si: 
+        // 1. El documento NO está verificado
+        // 2. O la cuenta ESTÁ bloqueada
+        const shouldShow = !u.documentoVerificado || u.cuentaBloqueada;
 
-            // Aplicar búsqueda
-            const searchLower = searchTerm.toLowerCase();
-            return (
-                u.nombre?.toLowerCase().includes(searchLower) ||
-                u.correo?.toLowerCase().includes(searchLower) ||
-                u.telefono?.toLowerCase().includes(searchLower)
-            );
-        }
-
-        // Para clientes y cuidadores: excluir usuarios ya verificados
-        if (u.documentoVerificado) return false;
+        if (!shouldShow) return false;
 
         // Aplicar filtro de búsqueda
         const searchLower = searchTerm.toLowerCase();
@@ -269,19 +257,16 @@ const AdminMain = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                         {data.map((user) => {
-                            // Mapear campos según el tipo de datos
-                            const isAuthUser = activeTab === 'usuarios';
-                            const userId = isAuthUser ? user.identificador : (user.clienteID || user.cuidadorID);
-                            const userName = isAuthUser ? user.nombre : user.nombreUsuario;
-                            const userEmail = isAuthUser ? user.correo : user.emailUsuario;
-                            const userPhone = isAuthUser ? user.telefono : (user.telefonoEmergencia || user.telefono);
-                            const userDoc = isAuthUser ? 'N/A' : user.documentoIdentidad;
-                            const userRoles = isAuthUser ? (user.roles || []).join(', ') : '';
+                            // ID para mostrar en la tabla (ClienteID o CuidadorID)
+                            const displayId = user.clienteID || user.cuidadorID;
+                            // ID para acciones de usuario (UsuarioID del Auth Service)
+                            // Intentamos user.usuarioID (camelCase) o user.UsuarioID (PascalCase) por si acaso
+                            const authUserId = user.usuarioID || user.UsuarioID;
 
                             return (
-                                <tr key={userId} className="hover:bg-slate-50/50 transition-colors">
+                                <tr key={displayId} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4 text-sm font-bold text-slate-500">
-                                        #{userId}
+                                        #{displayId}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center">
@@ -289,12 +274,8 @@ const AdminMain = () => {
                                                 <User className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <p className="font-bold text-slate-800">{userName}</p>
-                                                {isAuthUser ? (
-                                                    <p className="text-xs text-slate-400">Rol: {userRoles || 'N/A'}</p>
-                                                ) : (
-                                                    <p className="text-xs text-slate-400">CI: {userDoc}</p>
-                                                )}
+                                                <p className="font-bold text-slate-800">{user.nombreUsuario || 'Sin Nombre'}</p>
+                                                <p className="text-xs text-slate-400">CI: {user.documentoIdentidad || 'N/A'}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -302,18 +283,19 @@ const AdminMain = () => {
                                         <div className="space-y-1">
                                             <div className="flex items-center text-xs text-slate-600">
                                                 <Mail className="w-3 h-3 mr-2 text-slate-400" />
-                                                {userEmail}
+                                                {user.emailUsuario || 'N/A'}
                                             </div>
                                             <div className="flex items-center text-xs text-slate-600">
                                                 <Phone className="w-3 h-3 mr-2 text-slate-400" />
-                                                {userPhone || 'N/A'}
+                                                {/* Usamos telefonoUsuario que viene enriquecido, o telefonoEmergencia como fallback */}
+                                                {user.telefonoUsuario || user.telefonoEmergencia || 'N/A'}
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-2">
-                                            {/* Estado de verificación de documento (solo para clientes/cuidadores) */}
-                                            {!isAuthUser && !user.documentoVerificado && (
+                                            {/* Estado de verificación de documento */}
+                                            {!user.documentoVerificado && (
                                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
                                                     <XCircle className="w-3 h-3 mr-1" />
                                                     Pendiente Verificación
@@ -326,26 +308,18 @@ const AdminMain = () => {
                                                     🔒 Cuenta Bloqueada
                                                 </span>
                                             )}
-
-                                            {/* Estado activo (solo para usuarios de auth sin bloqueo) */}
-                                            {isAuthUser && !user.cuentaBloqueada && (
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                                                    <CheckCircle2 className="w-3 h-3 mr-1" />
-                                                    Activo
-                                                </span>
-                                            )}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-2">
-                                            {/* Botón de verificar documento (solo para clientes/cuidadores no verificados) */}
-                                            {!isAuthUser && !user.documentoVerificado && (
+                                            {/* Botón de verificar documento */}
+                                            {!user.documentoVerificado && (
                                                 <button
-                                                    onClick={() => handleVerify(user.clienteID || user.cuidadorID)}
-                                                    disabled={processingId === (user.clienteID || user.cuidadorID) || processingId === user.usuarioID}
+                                                    onClick={() => handleVerify(displayId)}
+                                                    disabled={processingId === displayId}
                                                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                                                 >
-                                                    {processingId === (user.clienteID || user.cuidadorID) ? 'Procesando...' : (
+                                                    {processingId === displayId ? 'Procesando...' : (
                                                         <>
                                                             <FileCheck className="w-3 h-3 mr-2" />
                                                             Validar Documento
@@ -354,14 +328,14 @@ const AdminMain = () => {
                                                 </button>
                                             )}
 
-                                            {/* Botón de desbloquear/bloquear cuenta */}
+                                            {/* Botones de bloqueo - Usamos authUserId */}
                                             {user.cuentaBloqueada ? (
                                                 <button
-                                                    onClick={() => handleUnlock(user.usuarioID || user.identificador)}
-                                                    disabled={processingId === (user.usuarioID || user.identificador)}
+                                                    onClick={() => handleUnlock(authUserId)}
+                                                    disabled={processingId === authUserId}
                                                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                                                 >
-                                                    {processingId === (user.usuarioID || user.identificador) ? 'Procesando...' : (
+                                                    {processingId === authUserId ? 'Procesando...' : (
                                                         <>
                                                             <Unlock className="w-3 h-3 mr-2" />
                                                             Desbloquear Cuenta
@@ -370,11 +344,11 @@ const AdminMain = () => {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    onClick={() => handleLock(user.usuarioID || user.identificador)}
-                                                    disabled={processingId === (user.usuarioID || user.identificador)}
+                                                    onClick={() => handleLock(authUserId)}
+                                                    disabled={processingId === authUserId}
                                                     className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-red-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                                                 >
-                                                    {processingId === (user.usuarioID || user.identificador) ? 'Procesando...' : (
+                                                    {processingId === authUserId ? 'Procesando...' : (
                                                         <>
                                                             <Lock className="w-3 h-3 mr-2" />
                                                             Bloquear Cuenta
@@ -452,15 +426,6 @@ const AdminMain = () => {
 
                 {/* Tabs */}
                 <div className="flex gap-4 mb-8">
-                    <button
-                        onClick={() => setActiveTab('usuarios')}
-                        className={`px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg ${activeTab === 'usuarios'
-                            ? 'bg-red-600 text-white shadow-red-200 scale-105'
-                            : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
-                            }`}
-                    >
-                        🔒 Cuentas Bloqueadas
-                    </button>
                     <button
                         onClick={() => setActiveTab('clientes')}
                         className={`px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-wider transition-all shadow-lg ${activeTab === 'clientes'
