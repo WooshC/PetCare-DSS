@@ -31,8 +31,8 @@ graph TD
     end
 
     Repo -->|SQL| DB[(PostgreSQL: ClienteDB)]:::db
-    AuthClient -->|HTTP REST| AuthService[Auth Service]:::external
-    
+    AuthClient -->|"HTTP REST"| AuthService[Auth Service]:::external
+
     %% Notas
     note right of Service
         Lógica de negocio:
