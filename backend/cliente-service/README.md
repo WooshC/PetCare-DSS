@@ -11,27 +11,26 @@ Muestra cómo los componentes internos del servicio interactúan entre sí y con
 
 ```mermaid
 graph TD
-    %% Estilos
-    classDef component fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef db fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
-
-    User[Frontend / API Gateway] -->|HTTP GET/POST| Controller
+    %% Nodos externos
+    User[Frontend / API Gateway]
+    DB[(PostgreSQL: ClienteDB)]
+    AuthService[Auth Service]
 
     subgraph "Cliente Service Context"
-        Controller[ClienteController]:::api
-        Service[ClienteService]:::component
-        Repo[PetCareContext / EF Core]:::component
-        AuthClient[AuthHttpClient]:::component
-
-        Controller -->|Llama a| Service
-        Service -->|Consulta/Persiste| Repo
-        Service -->|Enriquece Datos| AuthClient
+        Controller[ClienteController]
+        Service[ClienteService]
+        Repo[PetCareContext / EF Core]
+        AuthClient[AuthHttpClient]
     end
 
-    Repo -->|SQL| DB[(PostgreSQL: ClienteDB)]:::db
-    AuthClient -->|"HTTP REST"| AuthService[Auth Service]:::external
+    %% Relaciones
+    User -->|HTTP GET/POST| Controller
+    Controller -->|Llama a| Service
+    Service -->|Consulta/Persiste| Repo
+    Service -->|Enriquece Datos| AuthClient
+    
+    Repo -->|SQL| DB
+    AuthClient -->|"HTTP REST"| AuthService
 
     %% Notas
     note right of Service
@@ -40,6 +39,17 @@ graph TD
         - Validación de documentos
         - Fusión de datos (Auth + Cliente)
     end note
+
+    %% Estilos
+    classDef component fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef db fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
+
+    class Service,Repo,AuthClient component
+    class DB db
+    class AuthService external
+    class Controller api
 ```
 
 ### Nivel 4: Diagrama de Código (Clases Principales)

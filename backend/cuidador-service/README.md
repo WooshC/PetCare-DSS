@@ -11,28 +11,28 @@ Muestra las interacciones del servicio con bases de datos y servicios externos (
 
 ```mermaid
 graph TD
-    %% Estilos
-    classDef component fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef db fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
-
-    User[Web App / Mobile] -->|HTTP REST| Controller
+    %% Nodos externos
+    User[Web App / Mobile]
+    DB[(PostgreSQL: CuidadorDB)]
+    AuthService[Auth Service]
+    RatingService[Rating Service]
 
     subgraph "Cuidador Service Context"
-        Controller[CuidadorController]:::api
-        Service[CuidadorService]:::component
-        Repo[PetCareContext / EF Core]:::component
-        ApiClients[Health/Auth Http Clients]:::component
-
-        Controller -->|Delega a| Service
-        Service -->|Persistencia| Repo
-        Service -->|Consulta Datos| ApiClients
+        Controller[CuidadorController]
+        Service[CuidadorService]
+        Repo[PetCareContext / EF Core]
+        ApiClients[Health/Auth Http Clients]
     end
 
-    Repo -->|SQL| DB[(PostgreSQL: CuidadorDB)]:::db
-    ApiClients -->|HTTP| AuthService[Auth Service]:::external
-    ApiClients -.->|"HTTP (Opcional)"| RatingService[Rating Service]:::external
+    %% Relaciones
+    User -->|HTTP REST| Controller
+    Controller -->|Delega a| Service
+    Service -->|Persistencia| Repo
+    Service -->|Consulta Datos| ApiClients
+
+    Repo -->|SQL| DB
+    ApiClients -->|HTTP| AuthService
+    ApiClients -.->|"HTTP (Opcional)"| RatingService
 
     %% Notas
     note left of Service
@@ -42,6 +42,17 @@ graph TD
         - Disponibilidad
         - Cálculo de Reputation
     end note
+
+    %% Estilos
+    classDef component fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef db fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
+
+    class Service,Repo,ApiClients component
+    class DB db
+    class AuthService,RatingService external
+    class Controller api
 ```
 
 ### Nivel 4: Diagrama de Código (Clases Principales)
