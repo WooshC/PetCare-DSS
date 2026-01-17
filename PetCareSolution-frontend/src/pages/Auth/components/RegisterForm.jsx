@@ -82,7 +82,7 @@ const RegisterForm = () => {
   const FormSection = ({ title, icon: Icon, children }) => (
     <div className="bg-white rounded-[2rem] border border-slate-50 shadow-sm overflow-hidden mb-8">
       <div className="bg-slate-900 px-8 py-4 flex items-center space-x-3">
-        <Icon className="h-4 w-4 text-indigo-400" />
+        <Icon className="h-4 w-4 text-brand-400" />
         <h3 className="text-[10px] font-black text-white uppercase tracking-widest">{title}</h3>
       </div>
       <div className="p-8 space-y-6">{children}</div>
@@ -92,7 +92,7 @@ const RegisterForm = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center relative overflow-hidden px-4 py-16">
       <div className="absolute top-[-5%] right-[-5%] w-[40%] h-[40%] bg-emerald-200/20 rounded-full blur-[120px] animate-pulse"></div>
-      <div className="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-indigo-200/20 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+      <div className="absolute bottom-[-5%] left-[-5%] w-[40%] h-[40%] bg-brand-200/20 rounded-full blur-[120px] animate-pulse delay-1000"></div>
 
       <div className="max-w-3xl w-full relative z-10">
         <div className="text-center mb-12">
@@ -129,14 +129,14 @@ const RegisterForm = () => {
               <button
                 type="button"
                 onClick={() => { setValue('role', 'Cuidador'); trigger('role'); }}
-                className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center group relative ${selectedRole === 'Cuidador' ? 'border-indigo-500 bg-indigo-50/50 shadow-lg shadow-indigo-100' : 'border-slate-100 bg-slate-50/50 hover:bg-white'
+                className={`p-8 rounded-[2.5rem] border-2 transition-all flex flex-col items-center group relative ${selectedRole === 'Cuidador' ? 'border-brand-500 bg-brand-50/50 shadow-lg shadow-brand-100' : 'border-slate-100 bg-slate-50/50 hover:bg-white'
                   }`}
               >
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all ${selectedRole === 'Cuidador' ? 'bg-indigo-500 text-white scale-110' : 'bg-white text-slate-400'
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-all ${selectedRole === 'Cuidador' ? 'bg-brand-500 text-white scale-110' : 'bg-white text-slate-400'
                   }`}>
                   <PawPrint className="w-8 h-8" />
                 </div>
-                <span className={`text-xs font-black uppercase tracking-widest ${selectedRole === 'Cuidador' ? 'text-indigo-600' : 'text-slate-400'}`}>Cuidador</span>
+                <span className={`text-xs font-black uppercase tracking-widest ${selectedRole === 'Cuidador' ? 'text-brand-600' : 'text-slate-400'}`}>Cuidador</span>
                 <p className="text-[10px] text-slate-400 mt-2 font-bold text-center">Quiero ofrecer mis servicios</p>
               </button>
             </div>
