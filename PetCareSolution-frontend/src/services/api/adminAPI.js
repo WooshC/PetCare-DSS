@@ -12,12 +12,12 @@ const authApi = axios.create({
 // Cuidador: POST /api/cuidador/{id}/verificar (requiere admin role token)
 
 const clienteApi = axios.create({
-    baseURL: import.meta.env.VITE_CLIENTE_API_URL,
+    baseURL: import.meta.env.VITE_CLIENT_API_URL,
     headers: { 'Content-Type': 'application/json' },
 });
 
 const cuidadorApi = axios.create({
-    baseURL: import.meta.env.VITE_CUIDADOR_API_URL,
+    baseURL: import.meta.env.VITE_CAREGIVER_API_URL,
     headers: { 'Content-Type': 'application/json' },
 });
 
@@ -50,10 +50,10 @@ export const adminService = {
     },
 
     // Obtener lista completa de cuidadores (para ver estado de verificación)
-    // Usamos el endpoint GET /api/cuidador que protegimos con [Authorize(Roles="Admin")]
+    // Usamos el endpoint GET /api/cuidador que está disponible con autenticación
     getAllCuidadores: async (token) => {
         try {
-            const response = await cuidadorApi.get('/all', { // Asumiendo que existe /all o / en CuidadorController para admin
+            const response = await cuidadorApi.get('/', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             return response.data;
