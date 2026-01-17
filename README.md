@@ -23,8 +23,6 @@ graph TD
 
     %% Sistemas Externos
     PayPal[💳 PayPal API]
-    Maps[🗺️ Google Maps API]
-    Email[📧 Email Provider]
 
     %% Relaciones
     Cliente -->|Busca cuidados, reserva y paga| PetCare
@@ -32,8 +30,6 @@ graph TD
     Admin -->|Gestiona usuarios y auditoría| PetCare
 
     PetCare -->|Procesa pagos| PayPal
-    PetCare -->|Geolocalización| Maps
-    PetCare -->|Notificaciones| Email
 
     %% Estilos
     classDef person fill:#0d47a1,stroke:#000,stroke-width:2px,color:#fff
@@ -42,7 +38,7 @@ graph TD
 
     class Cliente,Cuidador,Admin person
     class PetCare system
-    class PayPal,Maps,Email external
+    class PayPal external
 ```
 
 ### Nivel 2: Diagrama de Contenedores (C2)
