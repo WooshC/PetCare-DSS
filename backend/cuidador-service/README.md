@@ -13,7 +13,7 @@ Muestra las interacciones del servicio con bases de datos y servicios externos (
 graph TD
     %% Nodos externos
     User[Web App / Mobile]
-    DB[(PostgreSQL: CuidadorDB)]
+    DB[(SQL Server: CuidadorDB)]
     AuthService[Auth Service]
     RatingService[Rating Service]
 
@@ -34,25 +34,22 @@ graph TD
     ApiClients -->|HTTP| AuthService
     ApiClients -.->|"HTTP (Opcional)"| RatingService
 
-    %% Notas
-    note left of Service
-        Responsabilidades:
-        - Perfiles de cuidadores
-        - Gestión de Tarifas
-        - Disponibilidad
-        - Cálculo de Reputation
-    end note
+    %% Nota como nodo
+    ServiceNote["📝 Responsabilidades:<br/>- Perfiles de cuidadores<br/>- Gestión de Tarifas<br/>- Disponibilidad<br/>- Cálculo de Reputation"]
+    Service -.->|Implementa| ServiceNote
 
     %% Estilos
     classDef component fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
     classDef db fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
+    classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5,color:#333
 
     class Service,Repo,ApiClients component
     class DB db
     class AuthService,RatingService external
     class Controller api
+    class ServiceNote note
 ```
 
 ### Nivel 4: Diagrama de Código (Clases Principales)
@@ -111,7 +108,7 @@ classDiagram
 ## 🛠️ Tecnologías
 
 - **Framework**: .NET 8 (ASP.NET Core Web API)
-- **Base de Datos**: PostgreSQL
+- **Base de Datos**: SQL Server
 - **ORM**: Entity Framework Core
 - **Comunicación**: REST, HttpClient
 - **Estrategia de Carga**: `Task.WhenAll` para carga paralela eficiente de datos externos (Auth/Rating).

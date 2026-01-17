@@ -13,7 +13,7 @@ Muestra cómo los componentes internos del servicio interactúan entre sí y con
 graph TD
     %% Nodos externos
     User[Frontend / API Gateway]
-    DB[(PostgreSQL: ClienteDB)]
+    DB[(SQL Server: ClienteDB)]
     AuthService[Auth Service]
 
     subgraph "Cliente Service Context"
@@ -106,7 +106,7 @@ classDiagram
 ## 🛠️ Tecnologías
 
 - **Framework**: .NET 8 (ASP.NET Core Web API)
-- **Base de Datos**: PostgreSQL
+- **Base de Datos**: SQL Server
 - **ORM**: Entity Framework Core
 - **Comunicación**: REST, HttpClient (comunicación síncrona con Auth)
 - **Contenerización**: Docker
