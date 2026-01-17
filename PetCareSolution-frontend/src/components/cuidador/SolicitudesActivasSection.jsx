@@ -105,6 +105,7 @@ const SolicitudesActivasSection = ({
       title: '¿Finalizar Servicio?',
       message: '¿Estás seguro de que quieres finalizar este servicio? Esta acción no se puede deshacer.',
       onConfirm: async () => {
+        closeModal(); // Cerrar modal inmediatamente para evitar doble click
         try {
           setActionLoading(solicitudId);
           const result = await cuidadorSolicitudService.finalizarServicio(solicitudId);

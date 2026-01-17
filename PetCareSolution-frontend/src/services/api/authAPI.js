@@ -18,8 +18,19 @@ export const authService = {
       const backendData = response.data;
 
       if (backendData.success && backendData.token) {
-        // Normalizar el rol
+        // Normalizar el rol principal que viene del backend
         const rawRole = backendData.user?.roles?.[0] || 'Usuario';
+        const userRoles = backendData.user?.roles?.map(r => r.toLowerCase()) || [];
+
+        // Validar que el usuario tenga el rol seleccionado en el login (si se especificó uno)
+        // Nota: credentials.role no viene en el objeto credentials original de este archivo, 
+        // pero lo manejaremos validando contra el rol que el frontend intente usar después.
+        // O mejor: El frontend llama a login, recibe los roles, y LUEGO decide si dejar pasar.
+        // Pero aquí estamos en authAPI.js. 
+
+        // MEJOR ESTRATEGIA: Devolver todos los roles al componente y que el componente valide.
+        // El código actual ya devuelve 'user.role' como el principal.
+
         const normalizedRole = rawRole.toLowerCase();
 
         const userData = {
@@ -27,8 +38,9 @@ export const authService = {
           name: backendData.user?.name || credentials.email.split('@')[0],
           email: credentials.email,
           phoneNumber: backendData.user?.phoneNumber || '',
-          role: normalizedRole, // Usar el rol normalizado
-          rawRole: rawRole, // Guardar también el rol original
+          role: normalizedRole,
+          roles: userRoles, // Agregamos la lista completa de roles
+          rawRole: rawRole,
         };
 
         // Guardar en localStorage

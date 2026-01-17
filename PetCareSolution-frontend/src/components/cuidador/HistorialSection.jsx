@@ -21,19 +21,35 @@ const HistorialSection = ({ cuidador }) => {
     const loadHistorialAndRatings = async () => {
       try {
         setLoading(true);
-        const [solicitudesData, ratingsData] = await Promise.all([
-          cuidadorSolicitudService.getMisSolicitudes(),
-          cuidador?.cuidadorID ? ratingsService.getRatingsByCuidador(cuidador.cuidadorID) : Promise.resolve([])
-        ]);
+        setError(null);
 
-        // Filtrar solo terminadas, canceladas o rechazadas
+        // Cargar solicitudes independientemente de los ratings
+        let solicitudesData = [];
+        try {
+          solicitudesData = await cuidadorSolicitudService.getMisSolicitudes();
+        } catch (reqError) {
+          console.error("Error cargando solicitudes:", reqError);
+          throw new Error("Error al cargar el historial de solicitudes.");
+        }
+
+        // Cargar ratings sin bloquear
+        let ratingsData = [];
+        if (cuidador?.cuidadorID) {
+          try {
+            ratingsData = await ratingsService.getRatingsByCuidador(cuidador.cuidadorID);
+          } catch (rateError) {
+            console.warn("No se pudieron cargar las calificaciones o no existen:", rateError);
+            // No lanzamos error, permitimos que ratingsData siga vacío
+          }
+        }
+
+        // Filtrar solo terminadas, canceladas o rechazadas (case insensitive)
         const historial = solicitudesData.filter(s =>
-          ['Finalizada', 'Cancelada', 'Rechazada'].includes(s.estado)
+          ['finalizada', 'cancelada', 'rechazada'].includes(s.estado?.toLowerCase())
         );
         setSolicitudes(historial);
 
-        // Crear mapa de ratings por RequestId para acceso rápido
-        // ratingsData puede ser null si no hay ratings o error
+        // Crear mapa de ratings
         const map = {};
         if (Array.isArray(ratingsData)) {
           ratingsData.forEach(r => {
@@ -43,9 +59,8 @@ const HistorialSection = ({ cuidador }) => {
         setRatingsMap(map);
 
       } catch (err) {
-        console.error("Error cargando historial/ratings:", err);
-        // No fallamos todo si solo fallan los ratings, pero mostramos error si fallan solicitudes
-        if (!solicitudes.length) setError("No se pudo cargar el historial completo.");
+        console.error("Error general en historial:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }

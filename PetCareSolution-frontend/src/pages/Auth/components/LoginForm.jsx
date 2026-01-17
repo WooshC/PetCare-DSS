@@ -101,6 +101,13 @@ const LoginForm = () => {
     try {
       const result = await authService.login({ email: formData.email, password: formData.password, identificadorArrendador: 'petcare-ecuador' });
       if (!result.success) throw new Error(result.message || 'Error en la autenticación');
+
+      // Validar que el usuario tenga el rol seleccionado
+      const userRoles = result.user.roles || [result.user.role];
+      if (!userRoles.includes(selectedRole.toLowerCase())) {
+        throw new Error(`No tienes una cuenta registrada como ${selectedRole === 'cuidador' ? 'Cuidador' : 'Cliente'}. Por favor regístrate primero.`);
+      }
+
       const user = { ...result.user, currentRole: selectedRole };
       localStorage.setItem('user', JSON.stringify(user));
       setModalData({ type: 'success', title: '¡Bienvenido!', message: `Hola ${result.user?.name}. Accediendo como ${selectedRole === 'cuidador' ? 'Cuidador' : 'Cliente'}.` });
