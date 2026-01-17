@@ -183,9 +183,16 @@ const HistorialSection = ({ cuidador }) => {
                             <div className={`w-4 h-4 rounded-full mt-0.5 ${s.modoPago === 'Fisico' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center`}>$</div>
                             <div>
                               <p className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Pago ({s.modoPago || 'PayPal'})</p>
-                              <p className="text-xs font-bold text-slate-600">
-                                ${monto} <span className="text-slate-400 font-normal">({s.duracionHoras}h)</span>
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs font-bold text-slate-600">
+                                  ${monto} <span className="text-slate-400 font-normal">({s.duracionHoras}h)</span>
+                                </p>
+                                {s.isPaid ? (
+                                  <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-md font-black tracking-wide">PAGADO</span>
+                                ) : (
+                                  <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md font-black tracking-wide">PENDIENTE</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         )}
