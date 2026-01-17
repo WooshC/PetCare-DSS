@@ -378,8 +378,8 @@ const AdminMain = () => {
             <header className="bg-slate-900 text-white py-4 px-6 md:px-12 shadow-xl sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-indigo-500 rounded-xl">
-                            <Shield className="w-6 h-6 text-white" />
+                        <div className="w-10 h-10 flex items-center justify-center">
+                            <img src="/petcare-logo.png" alt="PetCare Admin Logo" className="w-full h-full object-contain filter drop-shadow-md" />
                         </div>
                         <div>
                             <h1 className="text-xl font-black tracking-tight">PetCare Admin</h1>
