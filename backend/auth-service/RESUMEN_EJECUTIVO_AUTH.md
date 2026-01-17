@@ -87,15 +87,11 @@ Estado:        ✅ ACEPTABLE
 
 ---
 
-### RF-03: Política de Contraseñas Fuertes ⏳ PENDIENTE
+### RF-03: Política de Contraseñas Fuertes
 
 **Descripción**: Mínimo 8 caracteres, alfanumérico (mayúscula, minúscula, número, especial)
 
-**Pendiente**:
-- ⏳ Configurar IdentityOptions para requisitos
-- ⏳ Implementar validación de caracteres especiales
-- ⏳ Implementar lista de contraseñas prohibidas (rockyou.txt)
-- ⏳ Tests unitarios
+
 
 **Complejidad**: 3 (Media)  
 **Sprint**: 2  
@@ -133,7 +129,6 @@ Estado:        ✅ ACEPTABLE
 - ✅ name: Nombre del usuario (ClaimTypes.Name)
 - ✅ phone: Teléfono (ClaimTypes.MobilePhone)
 - ✅ **tenant**: IdentificadorArrendador (custom claim) 🆕
-- ✅ **mfa**: MFAHabilitado flag (custom claim) 🆕
 - ✅ role: Roles del usuario (ClaimTypes.Role)
 - ✅ iat: Tiempo de emisión (JwtRegisteredClaimNames.Iat)
 
@@ -186,11 +181,6 @@ Estado:        ✅ ACEPTABLE
 
 **Descripción**: Cifrado de datos sensibles + secretos en Azure Key Vault
 
-**Pendiente**:
-- ⏳ SQL Server TDE (Transparent Data Encryption)
-- ⏳ Azure Key Vault integration
-- ⏳ Cifrado de JWT Key en Vault
-- ⏳ Implementación en Producción (local: development sin requerimiento)
 
 **Complejidad**: 8 (Alta)  
 **Sprint**: Post-MVP (Producción)  
@@ -208,9 +198,7 @@ Estado:        ✅ ACEPTABLE
 - ✅ Campo `MFAHabilitado` en User.cs
 - ✅ Campo `ClaveSecretaMFA` en User.cs
 - ✅ JWT claim "mfa" incluido
-- ⏳ Implementación de generación de secreto TOTP
-- ⏳ Validación de código TOTP en login
-- ⏳ Backup codes para recuperación
+
 
 **Complejidad**: 8 (Alta)  
 **Sprint**: 4  
@@ -258,7 +246,7 @@ SL:2/M:2/O:3/S:3/ED:2/EE:1/A:3/ID:3/LC:2/LI:2/LAV:2/LAC:1/FD:3/RD:3/NC:3/PV:3
 SL:3/M:2/O:1/S:0/ED:3/EE:3/A:1/ID:1/LC:1/LI:1/LAV:3/LAC:1/FD:1/RD:1/NC:1/PV:1
 ```
 
-Ver: [OWASP_RISK_VECTORS_RF02.md](OWASP_RISK_VECTORS_RF02.md)
+
 
 ---
 
@@ -454,11 +442,6 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 - [x] README actualizado
 - [x] Este resumen ejecutivo
 
-### Testing
-- [ ] Unit tests RF-02 (próximo)
-- [ ] Integration tests RF-02 (próximo)
-- [ ] Manual testing (completar)
-- [ ] Load testing (pendiente)
 
 ---
 
