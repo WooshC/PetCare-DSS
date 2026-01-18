@@ -10,12 +10,12 @@
 
 ### Estado Actual
 ```
-✅ Completado:    RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-08, RNF-01
-⏳ Pendiente:     RNF-02, HU-01, HU-02, RF-07
+✅ Completado:    RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-08, RNF-01, HU-01, HU-02
+⏳ Pendiente:     RNF-02, RF-07
 🔴 No Aplica:    Otros servicios
 
 Sprint Actual: 1 (Completado)
-Próximo Sprint: 2 (RF-07, HU-01, HU-02)
+Próximo Sprint: 2 (RF-07)
 ```
 
 ### Risk Reduction
@@ -52,8 +52,8 @@ Estado:        ✅ ACEPTABLE
 | **RF-08** | Req. Funcional | Cifrado AES-256 de PAN + NUNCA almacenar CVV | 5 | FCS_COP.1 | ✅ Completado |
 | **RNF-01** | Req. No Funcional | TLS 1.2+ obligatorio en todas las comunicaciones | 3 | FDP_UCT.1 | ✅ Completado |
 | **RNF-02** | Req. No Funcional | Cifrado en reposo con SQL Server TDE y secretos en Vault | 8 | FDP_ITT.2, FDP_ITT.3 | ⏳ Pendiente |
-| **HU-01** | Historia de Usuario | Control de propiedad: Cliente/Cuidador solo acceden a sus recursos | 5 | FDP_ACC.1, FDP_ACF.1 | ⏳ Pendiente |
-| **HU-02** | Historia de Usuario | Segregación por rol en solicitudes (Cliente, Cuidador, Admin) | 5 | FDP_ACC.1, FDP_ACF.1 | ⏳ Pendiente |
+| **HU-01** | Historia de Usuario | Control de propiedad: Cliente/Cuidador solo acceden a sus recursos | 5 | FDP_ACC.1, FDP_ACF.1 | ✅ Completado |
+| **HU-02** | Historia de Usuario | Segregación por rol en solicitudes (Cliente, Cuidador, Admin) | 5 | FDP_ACC.1, FDP_ACF.1 | ✅ Completado |
 
 ---
 
@@ -240,6 +240,29 @@ Estado:        ✅ ACEPTABLE
 
 ---
 
+### HU-01 y HU-02: Control de Acceso y Segregación ✅ IMPLEMENTADO
+
+**Descripción**: 
+- HU-01: Usuarios solo acceden a sus propios recursos (Cliente/Cuidador).
+- HU-02: Segregación estricta por roles en endpoints.
+
+**Implementado**:
+- ✅ `[Authorize(Roles="...")]` en controladores.
+- ✅ Validación de propiedad: `if (resource.OwnerId != currentUserId) return Forbid()`.
+- ✅ Endpoints específicos para roles (`SolicitudClienteController` vs `SolicitudController`).
+- ✅ Lógica centralizada en `SolicitudController.cs`.
+
+**Ubicación**: 
+- [SolicitudController.cs](../request-service/PetCare.Request/Controllers/SolicitudController.cs)
+- [SolicitudClienteController.cs](../request-service/PetCare.Request/Controllers/SolicitudClienteController.cs)
+
+**Cumplimiento**:
+- ✅ Common Criteria FDP_ACC.1 (Subset access control)
+- ✅ Common Criteria FDP_ACF.1 (Security attribute based access control)
+- ✅ OWASP Broken Access Control (Mitigado)
+
+---
+
 ### HU-03: Autenticación Multifactor (MFA) 📋 ESPECIFICADA
 
 **Descripción**: MFA para admins en operaciones críticas (TOTP/SMS)
@@ -386,8 +409,6 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 
 ### Sprint 2 (Semanas 2-3): Secure Inter-Service Communication
 - [ ] Implementar RF-07 (Service JWT)
-- [ ] Implementar HU-01 (Control propiedad)
-- [ ] Implementar HU-02 (Segregación roles)
 
 ### Sprint 3 (Semanas 4-5): Enhanced Security
 - [ ] Validar RF-04 en todos los endpoints
@@ -435,6 +456,8 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 ✅ RF-05: 100% implementado
 ✅ RF-06: 100% implementado
 ✅ RF-08: 100% implementado (Payment)
+✅ HU-01: 100% implementado
+✅ HU-02: 100% implementado
 ⏳ RF-07: 0% (próximo)
 ⏳ HU-03: 15% (preparado)
 ```
