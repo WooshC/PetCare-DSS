@@ -11,7 +11,6 @@
 ### Estado Actual
 ```
 ✅ Completado:    RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-08, RNF-01, HU-01, HU-02
-🔴 Descartado:    RNF-02, RF-07 (Alcance Prototipo/MVP)
 ⚪ No Aplica:    Otros servicios
 
 Sprint Actual: 1 (Completado)
