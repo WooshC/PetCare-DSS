@@ -1,0 +1,479 @@
+@startuml C1-Context-Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Sistema PetCare DSS - Diagrama de Contexto (C1)
+
+Person(cliente, "Cliente/Dueño", "Usuario que busca servicios de cuidado para mascotas")
+Person(cuidador, "Cuidador Profesional", "Proveedor de servicios de cuidado")
+Person(admin, "Administrador", "Gestiona usuarios y auditoría del sistema")
+
+System(petcare, "PetCare System", "Plataforma de conexión entre dueños y cuidadores")
+
+System_Ext(paypal, "PayPal API", "Procesamiento de pagos externos")
+
+Rel(cliente, petcare, "Busca cuidados, reserva y paga")
+Rel(cuidador, petcare, "Gestiona perfil y acepta solicitudes")
+Rel(admin, petcare, "Gestiona usuarios y auditoría")
+Rel(petcare, paypal, "Procesa pagos")
+
+@enduml
+
+@startuml C2-Container-Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Sistema PetCare DSS - Diagrama de Contenedores (C2)
+
+Person(user, "Usuario", "Cliente, Cuidador o Admin")
+
+Container(webapp, "Web Application", "React + Vite", "Aplicación frontend SPA")
+Container(gateway, "API Gateway", "Nginx", "Enrutamiento y balanceo de carga")
+
+System_Boundary(backend, "Backend Microservices") {
+    Container(auth, "Auth Service", ".NET 8", "Autenticación y autorización JWT")
+    Container(cliente, "Cliente Service", ".NET 8", "Gestión de perfiles de clientes")
+    Container(cuidador, "Cuidador Service", ".NET 8", "Gestión de perfiles de cuidadores")
+    Container(request, "Request Service", ".NET 8", "Gestión de solicitudes de servicio")
+    Container(payment, "Payment Service", ".NET 8", "Procesamiento de pagos")
+    Container(rating, "Rating Service", ".NET 8", "Sistema de calificaciones")
+}
+
+System_Boundary(data, "Data Persistence") {
+    ContainerDb(db_auth, "Auth DB", "SQL Server", "Usuarios y roles")
+    ContainerDb(db_cliente, "Cliente DB", "SQL Server", "Datos de clientes")
+    ContainerDb(db_cuidador, "Cuidador DB", "SQL Server", "Datos de cuidadores")
+    ContainerDb(db_request, "Request DB", "SQL Server", "Solicitudes")
+    ContainerDb(db_payment, "Payment DB", "SQL Server", "Transacciones")
+    ContainerDb(db_rating, "Rating DB", "SQL Server", "Calificaciones")
+}
+
+System_Ext(paypal, "PayPal API", "Pasarela de pagos")
+
+Rel(user, webapp, "Usa", "HTTPS")
+Rel(webapp, gateway, "API Calls", "HTTPS/JSON")
+
+Rel(gateway, auth, "/api/auth")
+Rel(gateway, cliente, "/api/cliente")
+Rel(gateway, cuidador, "/api/cuidador")
+Rel(gateway, request, "/api/solicitud")
+Rel(gateway, payment, "/api/payment")
+Rel(gateway, rating, "/api/ratings")
+
+Rel(request, auth, "Obtiene datos usuario", "HTTP")
+Rel(request, cuidador, "Consulta tarifas", "HTTP")
+Rel(request, payment, "Crea orden pago", "HTTP")
+
+Rel(auth, db_auth, "Lee/Escribe", "SQL")
+Rel(cliente, db_cliente, "Lee/Escribe", "SQL")
+Rel(cuidador, db_cuidador, "Lee/Escribe", "SQL")
+Rel(request, db_request, "Lee/Escribe", "SQL")
+Rel(payment, db_payment, "Lee/Escribe", "SQL")
+Rel(rating, db_rating, "Lee/Escribe", "SQL")
+
+Rel(payment, paypal, "Procesa pagos", "REST API")
+
+@enduml
+
+@startuml C3-Auth-Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Auth Service - Diagrama de Componentes (C3)
+
+Container_Boundary(auth_service, "Auth Service") {
+    Component(auth_controller, "AuthController", "ASP.NET Controller", "Endpoints de autenticación")
+    Component(admin_controller, "AdminController", "ASP.NET Controller", "Endpoints administrativos")
+    Component(auth_service_comp, "AuthService", "Service", "Lógica de autenticación")
+    Component(admin_service, "AdminService", "Service", "Lógica administrativa")
+    Component(user_manager, "UserManager", "Identity", "Gestión de usuarios")
+    Component(db_context, "AuthDbContext", "EF Core", "Acceso a datos")
+}
+
+ContainerDb(db, "Auth DB", "SQL Server")
+Person(user, "Usuario")
+
+Rel(user, auth_controller, "Login/Register/Me")
+Rel(user, admin_controller, "Admin Operations")
+
+Rel(auth_controller, auth_service_comp, "Usa")
+Rel(auth_controller, user_manager, "Consulta")
+Rel(admin_controller, admin_service, "Usa")
+
+Rel(auth_service_comp, user_manager, "Usa")
+Rel(admin_service, user_manager, "Usa")
+Rel(user_manager, db_context, "Persiste")
+Rel(db_context, db, "SQL")
+
+@enduml
+
+@startuml C3-Request-Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Request Service - Diagrama de Componentes (C3)
+
+Container_Boundary(request_service, "Request Service") {
+    Component(sol_controller, "SolicitudController", "Controller", "CRUD Admin")
+    Component(cli_controller, "SolicitudClienteController", "Controller", "Operaciones Cliente")
+    Component(cui_controller, "SolicitudCuidadorController", "Controller", "Operaciones Cuidador")
+    Component(service, "SolicitudService", "Service", "Lógica de negocio")
+    Component(mapper, "AutoMapper", "Mapper", "Mapeo DTOs")
+    Component(audit, "AuditService", "Service", "Auditoría")
+    Component(db_context, "RequestDbContext", "EF Core", "Acceso a datos")
+}
+
+ContainerDb(db, "Request DB", "SQL Server")
+Container_Ext(auth_svc, "Auth Service")
+Container_Ext(cuidador_svc, "Cuidador Service")
+Container_Ext(payment_svc, "Payment Service")
+Person(user, "Usuario")
+
+Rel(user, sol_controller, "CRUD Admin")
+Rel(user, cli_controller, "Operaciones Cliente")
+Rel(user, cui_controller, "Operaciones Cuidador")
+
+Rel(sol_controller, service, "Usa")
+Rel(cli_controller, service, "Usa")
+Rel(cui_controller, service, "Usa")
+
+Rel(service, mapper, "Mapea DTOs")
+Rel(service, db_context, "Persiste")
+Rel(service, audit, "Audita")
+
+Rel(service, auth_svc, "Valida Usuario", "HTTP")
+Rel(service, cuidador_svc, "Consulta Tarifas", "HTTP")
+Rel(service, payment_svc, "Crea Orden", "HTTP")
+
+Rel(db_context, db, "SQL")
+Rel(audit, db_context, "Persiste logs")
+
+@enduml
+
+@startuml C3-Payment-Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Payment Service - Diagrama de Componentes (C3)
+
+Container_Boundary(payment_service, "Payment Service") {
+    Component(controller, "PaymentController", "Controller", "API de pagos")
+    Component(paypal_svc, "PayPalService", "Service", "Integración PayPal")
+    Component(enc_svc, "EncryptionService", "Service", "Encriptación AES-256")
+    Component(audit, "AuditService", "Service", "Auditoría")
+    Component(db_context, "PaymentDbContext", "EF Core", "Acceso a datos")
+}
+
+ContainerDb(db, "Payment DB", "SQL Server")
+System_Ext(paypal, "PayPal API")
+Person(user, "Usuario")
+
+Rel(user, controller, "Inicia Pago")
+Rel(controller, paypal_svc, "Procesa")
+Rel(controller, enc_svc, "Encripta Datos")
+Rel(controller, audit, "Audita")
+
+Rel(paypal_svc, paypal, "REST API")
+Rel(paypal_svc, db_context, "Registra")
+Rel(audit, db_context, "Persiste logs")
+Rel(db_context, db, "SQL")
+
+@enduml
+
+@startuml C3-Cliente-Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Cliente Service - Diagrama de Componentes (C3)
+
+Container_Boundary(cliente_service, "Cliente Service") {
+    Component(controller, "ClienteController", "Controller", "CRUD Perfil")
+    Component(service, "ClienteService", "Service", "Lógica de negocio")
+    Component(auth_client, "AuthHttpClient", "HTTP Client", "Cliente Auth")
+    Component(audit, "AuditService", "Service", "Auditoría")
+    Component(db_context, "PetCareContext", "EF Core", "Acceso a datos")
+}
+
+ContainerDb(db, "Cliente DB", "SQL Server")
+Container_Ext(auth_svc, "Auth Service")
+Person(user, "Usuario")
+
+Rel(user, controller, "CRUD Perfil")
+Rel(controller, service, "Usa")
+Rel(service, db_context, "Persiste")
+Rel(service, auth_client, "Consulta Auth Info")
+Rel(controller, audit, "Audita")
+
+Rel(auth_client, auth_svc, "HTTP REST")
+Rel(audit, db_context, "Persiste logs")
+Rel(db_context, db, "SQL")
+
+@enduml
+
+@startuml C3-Cuidador-Service
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Cuidador Service - Diagrama de Componentes (C3)
+
+Container_Boundary(cuidador_service, "Cuidador Service") {
+    Component(controller, "CuidadorController", "Controller", "CRUD Perfil")
+    Component(service, "CuidadorService", "Service", "Lógica de negocio")
+    Component(api_clients, "ApiClients", "HTTP Clients", "Auth/Rating Clients")
+    Component(audit, "AuditService", "Service", "Auditoría")
+    Component(db_context, "PetCareContext", "EF Core", "Acceso a datos")
+}
+
+ContainerDb(db, "Cuidador DB", "SQL Server")
+Container_Ext(auth_svc, "Auth Service")
+Container_Ext(rating_svc, "Rating Service")
+Person(user, "Usuario")
+
+Rel(user, controller, "HTTP REST")
+Rel(controller, service, "Usa")
+Rel(service, db_context, "Persiste")
+Rel(service, api_clients, "Consulta Datos")
+Rel(controller, audit, "Audita")
+
+Rel(api_clients, auth_svc, "HTTP")
+Rel(api_clients, rating_svc, "HTTP")
+Rel(audit, db_context, "Persiste logs")
+Rel(db_context, db, "SQL")
+
+@enduml
+
+@startuml C4-Auth-Service-Classes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Auth Service - Diagrama de Clases (C4)
+
+class AuthController {
+    +Register(RegisterRequest)
+    +Login(LoginRequest)
+    +RequestPasswordReset(request)
+    +ConfirmPasswordReset(request)
+    +ChangePassword(request)
+    +GetUsers()
+    +GetUserById(id)
+    +GetCurrentUser()
+}
+
+class AdminController {
+    +RegistrarAdmin(request)
+    +RegistrarUsuario(request)
+    +ListarUsuarios()
+    +ObtenerDetallesUsuario(id)
+    +CambiarRol(id, request)
+    +EliminarUsuario(id)
+    +BloquearUsuario(id)
+    +DesbloquearUsuario(id)
+}
+
+class AuthService {
+    +RegisterAsync()
+    +LoginAsync()
+    +RequestPasswordResetAsync()
+    +ConfirmPasswordResetAsync()
+    +ChangePasswordAsync()
+}
+
+class AdminService {
+    +RegistrarAdminAsync()
+    +RegistrarUsuarioPorAdminAsync()
+    +BloquearDesbloquearUsuarioAsync()
+}
+
+class User {
+    +String Id
+    +String Nombre
+    +String IdentificadorArrendador
+    +Boolean CuentaBloqueada
+}
+
+AuthController --> AuthService
+AuthController --> User
+AdminController --> AdminService
+AuthService ..> User
+AdminService ..> User
+
+@enduml
+
+@startuml C4-Request-Service-Classes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Request Service - Diagrama de Clases (C4)
+
+class SolicitudController {
+    +GetSolicitudes(filtros)
+    +GetSolicitudById(id)
+    +UpdateEstado(id, estado)
+}
+
+class SolicitudClienteController {
+    +CreateSolicitud(request)
+    +GetMisSolicitudes()
+    +CancelarSolicitud(id)
+    +PagarSolicitud(id)
+    +CalificarSolicitud(id)
+}
+
+class SolicitudCuidadorController {
+    +GetSolicitudesAsignadas()
+    +AceptarSolicitud(id)
+    +RechazarSolicitud(id)
+    +IniciarServicio(id)
+    +FinalizarServicio(id)
+}
+
+class SolicitudService {
+    +CreateSolicitudAsync()
+    +UpdateSolicitudEstadoAsync()
+    +EnrichSolicitudWithUserInfo()
+    +CrearOrdenPagoAsync()
+}
+
+class Solicitud {
+    +int SolicitudID
+    +int ClienteID
+    +int? CuidadorID
+    +string Estado
+    +string ModoPago
+    +bool IsPaid
+    +bool IsRated
+    +DateTime FechaHoraInicio
+    +int DuracionHoras
+}
+
+SolicitudController --> SolicitudService
+SolicitudClienteController --> SolicitudService
+SolicitudCuidadorController --> SolicitudService
+SolicitudService --> Solicitud
+
+@enduml
+
+@startuml C4-Payment-Service-Classes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Payment Service - Diagrama de Clases (C4)
+
+class PaymentController {
+    +CreateOrder(PaymentRequest)
+    +SaveCard(SaveCardRequest)
+    +GetMyCards()
+}
+
+class PayPalService {
+    +CreateOrder(PaymentRequest)
+    -GetAccessToken()
+}
+
+class EncryptionService {
+    +Encrypt(string text)
+    +Decrypt(string cipher)
+}
+
+class CreditCardEntity {
+    +int Id
+    +string UserId
+    +string EncryptedCardNumber
+    +string MaskedNumber
+    +string CardHolderName
+    +DateTime CreatedAt
+}
+
+PaymentController --> PayPalService
+PaymentController --> EncryptionService
+PaymentController ..> CreditCardEntity
+
+@enduml
+
+@startuml C4-Cliente-Service-Classes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Cliente Service - Diagrama de Clases (C4)
+
+class ClienteController {
+    +GetMiPerfil()
+    +CrearPerfil(request)
+    +ActualizarPerfil(request)
+    +EliminarPerfil()
+    +GetAll()
+    +GetById(id)
+    +VerificarDocumento(id)
+}
+
+class ClienteService {
+    +GetByUsuarioIdAsync()
+    +CreateAsync()
+    +UpdateAsync()
+    +VerifyDocumentoAsync()
+    +EnriquecerConDatosDelUsuarioAsync()
+}
+
+class Cliente {
+    +int ClienteID
+    +int UsuarioID
+    +string DocumentoIdentidad
+    +bool DocumentoVerificado
+    +string Direccion
+    +string TelefonoEmergencia
+}
+
+class ClienteResponse {
+    +int ClienteID
+    +string NombreUsuario
+    +string EmailUsuario
+    +string DocumentoIdentidad
+    +bool DocumentoVerificado
+}
+
+ClienteController --> ClienteService
+ClienteService --> Cliente
+ClienteService ..> ClienteResponse
+
+@enduml
+
+@startuml C4-Cuidador-Service-Classes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Cuidador Service - Diagrama de Clases (C4)
+
+class CuidadorController {
+    +GetAllCuidadores()
+    +GetCuidador(id)
+    +ValidarCuidador(id)
+    +GetMiPerfil()
+    +CreateCuidador(request)
+    +UpdateCuidador(id, request)
+    +UpdateMiPerfil(request)
+    +DeleteCuidador(id)
+    +VerificarDocumento(id)
+    +UpdateRating(id, rating)
+}
+
+class CuidadorService {
+    +GetAllCuidadoresAsync()
+    +GetCuidadorByIdAsync()
+    +CreateCuidadorAsync()
+    +UpdateCuidadorAsync()
+    +VerificarDocumentoAsync()
+    +EnriquecerConDatosDelUsuarioAsync()
+}
+
+class Cuidador {
+    +int CuidadorID
+    +int UsuarioID
+    +string Especialidad
+    +decimal TarifaPorHora
+    +string Experiencia
+    +bool DocumentoVerificado
+    +string Estado
+}
+
+class CuidadorResponse {
+    +int CuidadorID
+    +string NombreCompleto
+    +string EmailContacto
+    +string Telefono
+    +double CalificacionPromedio
+    +decimal TarifaPorHora
+}
+
+CuidadorController --> CuidadorService
+CuidadorService --> Cuidador
+CuidadorService ..> CuidadorResponse
+
+@enduml
