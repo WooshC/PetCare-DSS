@@ -60,4 +60,4 @@ docker logs -f petcare-dss-petcare-request-1
 ```
 *(Cambia `request` por `auth`, `payment`, `cliente`, `cuidador` según el servicio)*
 
-¡Éxito en la presentación! 🍀
+

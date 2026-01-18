@@ -10,12 +10,12 @@
 
 ### Estado Actual
 ```
-✅ Completado:    RF-01, RF-02, RF-04, RF-05, RF-10, RNF-01
-⏳ Pendiente:     RF-03, HU-03, RNF-02
+✅ Completado:    RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-08, RNF-01
+⏳ Pendiente:     RNF-02, HU-01, HU-02, RF-07
 🔴 No Aplica:    Otros servicios
 
 Sprint Actual: 1 (Completado)
-Próximo Sprint: 2 (RF-03: Password Policy)
+Próximo Sprint: 2 (RF-07, HU-01, HU-02)
 ```
 
 ### Risk Reduction
@@ -36,7 +36,29 @@ Estado:        ✅ ACEPTABLE
 
 ---
 
-## 📋 REQUISITOS DE AUTH - ESTADO ACTUAL
+## 📋 REQUISITOS DE AUTH - LISTADO MAESTRO
+
+### 📊 Tabla de Requisitos y Cumplimiento
+
+| ID | Tipo | Descripción | Prioridad | Criterio Common Criteria | Estado |
+|:---:|:---:|:---|:---:|:---|:---:|
+| **RF-01** | Req. Funcional | Autenticación JWT universal en todos los servicios | 5 | FIA_UID.2, FIA_UAU.2 | ✅ Completado |
+| **RF-02** | Req. Funcional | Bloqueo de cuenta tras intentos fallidos de login | 5 | FIA_AFL.1 | ✅ Completado |
+| **RF-03** | Req. Funcional | Política de contraseñas fuertes (mínimo 8 caracteres, alfanumérico) | 3 | FIA_SOS.1 | ✅ Completado |
+| **RF-04** | Req. Funcional | Mensajes de error genéricos (anti-enumeración de usuarios) | 2 | FIA_UAU.7 | ✅ Completado |
+| **RF-05** | Req. Funcional | Atributos de sesión en JWT (sub, role, tenant) | 3 | FIA_ATD.1, FIA_USB.1 | ✅ Completado |
+| **RF-06** | Req. Funcional | Hashing seguro de contraseñas con PBKDF2 | 5 | FCS_COP.1 | ✅ Completado |
+| **RF-07** | Req. Funcional | JWT de servicio para comunicación inter-microservicios | 5 | FDP_IFC.1, FDP_IFF.1 | ⏳ Pendiente |
+| **RF-08** | Req. Funcional | Cifrado AES-256 de PAN + NUNCA almacenar CVV | 5 | FCS_COP.1 | ✅ Completado |
+| **RNF-01** | Req. No Funcional | TLS 1.2+ obligatorio en todas las comunicaciones | 3 | FDP_UCT.1 | ✅ Completado |
+| **RNF-02** | Req. No Funcional | Cifrado en reposo con SQL Server TDE y secretos en Vault | 8 | FDP_ITT.2, FDP_ITT.3 | ⏳ Pendiente |
+| **HU-01** | Historia de Usuario | Control de propiedad: Cliente/Cuidador solo acceden a sus recursos | 5 | FDP_ACC.1, FDP_ACF.1 | ⏳ Pendiente |
+| **HU-02** | Historia de Usuario | Segregación por rol en solicitudes (Cliente, Cuidador, Admin) | 5 | FDP_ACC.1, FDP_ACF.1 | ⏳ Pendiente |
+
+---
+
+## 📝 DETALLE DE IMPLEMENTACIÓN
+
 
 ### RF-01: Autenticación JWT Universal ✅ COMPLETO
 
@@ -87,17 +109,23 @@ Estado:        ✅ ACEPTABLE
 
 ---
 
-### RF-03: Política de Contraseñas Fuertes
+### RF-03: Política de Contraseñas Fuertes ✅ IMPLEMENTADO
 
 **Descripción**: Mínimo 8 caracteres, alfanumérico (mayúscula, minúscula, número, especial)
 
+**Implementado**:
+- ✅ Longitud mínima: 8 caracteres (`RequiredLength = 8`)
+- ✅ Dígitos requeridos (`RequireDigit = true`)
+- ✅ Minúsculas requeridas (`RequireLowercase = true`)
+- ✅ Mayúsculas requeridas (`RequireUppercase = true`)
+- ✅ Caracteres especiales requeridos (`RequireNonAlphanumeric = true`)
 
+**Ubicación**: [Program.cs](PetCare.Auth/Program.cs#L47) - Identity configuration
 
-**Complejidad**: 3 (Media)  
-**Sprint**: 2  
-**Common Criteria**: FIA_SOS.1
-
-**Nota**: Actualmente ASP.NET Identity usa configuración por defecto (débil)
+**Cumplimiento**:
+- ✅ NIST SP 800-63B (Authenticator Assurance Level 2)
+- ✅ Common Criteria FIA_SOS.1 (Verification of secrets)
+- ✅ PCI DSS 8.2.3 (Password complexity)
 
 ---
 
@@ -141,7 +169,29 @@ Estado:        ✅ ACEPTABLE
 
 ---
 
-### RF-10: Hashing Seguro ✅ HEREDADO
+### RF-08: Cifrado AES-256 (Payment Service) ✅ IMPLEMENTADO
+
+**Descripción**: Cifrado AES-256 de PAN + NUNCA almacenar CVV
+
+**Implementado**:
+- ✅ Algoritmo AES-256 con clave de 32 bytes (`EncryptionService.cs`)
+- ✅ IV generado dinámicamente por cada encripción
+- ✅ Modelo `CreditCardEntity` NO incluye campo CVV
+- ✅ Almacenamiento seguro en base de datos (`EncryptedCardNumber`)
+- ✅ Masked Number (************1234) para visualización
+
+**Ubicación**: 
+- [EncryptionService.cs](../payment-service/PetCare.Payment/Services/EncryptionService.cs)
+- [PaymentController.cs](../payment-service/PetCare.Payment/Controllers/PaymentController.cs)
+
+**Cumplimiento**:
+- ✅ PCI DSS 3.4 (PAN encryption)
+- ✅ PCI DSS 3.2 (Do not store CVV)
+- ✅ Common Criteria FCS_COP.1
+
+---
+
+### RF-06: Hashing Seguro ✅ IMPLEMENTADO
 
 **Descripción**: BCrypt/Argon2 para hashing de contraseñas
 
@@ -334,12 +384,10 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 
 ## 🚀 ROADMAP - PRÓXIMOS PASOS
 
-### Sprint 2 (Semanas 2-3): Password Policy
-- [ ] Implementar RF-03 (Password Policy)
-- [ ] Mínimo 8 caracteres
-- [ ] Mayúscula + minúscula + número + especial
-- [ ] Validación de contraseñas prohibidas
-- [ ] Unit tests para RF-03
+### Sprint 2 (Semanas 2-3): Secure Inter-Service Communication
+- [ ] Implementar RF-07 (Service JWT)
+- [ ] Implementar HU-01 (Control propiedad)
+- [ ] Implementar HU-02 (Segregación roles)
 
 ### Sprint 3 (Semanas 4-5): Enhanced Security
 - [ ] Validar RF-04 en todos los endpoints
@@ -382,10 +430,12 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 ```
 ✅ RF-01: 100% implementado
 ✅ RF-02: 100% implementado
+✅ RF-03: 100% implementado
 ✅ RF-04: 100% implementado
 ✅ RF-05: 100% implementado
-✅ RF-10: 100% heredado
-⏳ RF-03: 0% (próximo)
+✅ RF-06: 100% implementado
+✅ RF-08: 100% implementado (Payment)
+⏳ RF-07: 0% (próximo)
 ⏳ HU-03: 15% (preparado)
 ```
 
@@ -455,7 +505,7 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 - JWT con validación de tenant
 
 **Pendiente antes de producción:**
-- RF-03: Password Policy (Sprint 2)
+- RF-07: Seguridad de comunicación inter-servicios
 - RNF-02: Key Vault integration (Post-MVP)
 - Unit tests automatizados
 
