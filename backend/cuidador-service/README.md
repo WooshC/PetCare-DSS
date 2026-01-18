@@ -20,8 +20,9 @@ graph TD
     subgraph "Cuidador Service Context"
         Controller[CuidadorController]
         Service[CuidadorService]
-        Repo[PetCareContext / EF Core]
+        Repo[PetCareContext]
         ApiClients[Health/Auth Http Clients]
+        Audit[AuditService]
     end
 
     %% Relaciones
@@ -29,10 +30,13 @@ graph TD
     Controller -->|Delega a| Service
     Service -->|Persistencia| Repo
     Service -->|Consulta Datos| ApiClients
+    
+    Controller -- Audita --> Audit
+    Audit -- Persiste --> Repo
 
     Repo -->|SQL| DB
     ApiClients -->|HTTP| AuthService
-    ApiClients -.->|"HTTP (Opcional)"| RatingService
+    ApiClients -.->|HTTP| RatingService
 
     %% Nota como nodo
     ServiceNote["📝 Responsabilidades:<br/>- Perfiles de cuidadores<br/>- Gestión de Tarifas<br/>- Disponibilidad<br/>- Cálculo de Reputation"]
@@ -45,7 +49,7 @@ graph TD
     classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
     classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5,color:#333
 
-    class Service,Repo,ApiClients component
+    class Service,Repo,ApiClients,Audit component
     class DB db
     class AuthService,RatingService external
     class Controller api
@@ -64,38 +68,48 @@ classDiagram
 
     class CuidadorController:::controller {
         +GetAllCuidadores()
-        +GetById(Guid id)
-        +UpdatePerfil(CuidadorRequest dto)
-        +VerificarCuidador(Guid id)
+        +GetCuidador(id)
+        +ValidarCuidador(id)
+        +GetMiPerfil()
+        +CreateCuidador(request)
+        +UpdateCuidador(id, request)
+        +UpdateMiPerfil(request)
+        +DeleteCuidador(id)
+        +VerificarDocumento(id)
+        +UpdateRating(id, rating)
     }
 
     class CuidadorService:::service {
-        -PetCareContext _context
         +GetAllCuidadoresAsync()
+        +GetCuidadorByIdAsync()
+        +CreateCuidadorAsync()
+        +UpdateCuidadorAsync()
+        +VerificarDocumentoAsync()
         +EnriquecerConDatosDelUsuarioAsync()
-        +CalcularRatingPromedio()
     }
 
     class Cuidador:::model {
-        +Guid CuidadorID
-        +String Especialidad
-        +Decimal TarifaPorHora
-        +String Experiencia
-        +Boolean DocumentoVerificado
-        +String FotoPerfilUrl
+        +int CuidadorID
+        +int UsuarioID
+        +string Especialidad
+        +decimal TarifaPorHora
+        +string Experiencia
+        +bool DocumentoVerificado
+        +string Estado
     }
 
     class CuidadorResponse:::model {
-        +Guid CuidadorID
-        +String NombreCompleto
-        +String EmailContacto
-        +Double PromedioCalificacion
-        +Boolean CuentaBloqueada
+        +int CuidadorID
+        +string NombreCompleto
+        +string EmailContacto
+        +string Telefono
+        +double CalificacionPromedio
+        +decimal TarifaPorHora
     }
 
     CuidadorController --> CuidadorService : Dependencia
-    CuidadorService --> Cuidador : Gestiona (Entity)
-    CuidadorService ..> CuidadorResponse : Produce (DTO Enriquecido)
+    CuidadorService --> Cuidador : Gestiona
+    CuidadorService ..> CuidadorResponse : Retorna DTO Enriquecido
 ```
 
 ## 🚀 Funcionalidades Principales

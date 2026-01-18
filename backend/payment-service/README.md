@@ -12,21 +12,25 @@ graph TD
     User[Frontend]
     DB[(SQL Server: PaymentDB)]
     PayPal[PayPal API]
-
+    
     subgraph "Payment Service Context"
         Controller[PaymentController]
         PayPalSvc[PayPalService]
         EncSvc[EncryptionService]
         Repo[PaymentDbContext]
+        Audit[AuditService]
     end
 
     %% Relaciones
     User -->|Inicia Pago| Controller
     Controller -->|Procesa| PayPalSvc
-    Controller -->|Encripta Datos Sensibles| EncSvc
+    Controller -->|Encripta Datos| EncSvc
     
     PayPalSvc -->|REST API| PayPal
-    PayPalSvc -->|Registra| Repo
+    PayPalSvc -->|Registra Transacción| Repo
+    
+    Controller -- Genera --> Audit
+    Audit -- Persiste --> Repo
     Repo -->|SQL| DB
 
     %% Nota
@@ -40,7 +44,7 @@ graph TD
     classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
     classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5,color:#333
 
-    class PayPalSvc,EncSvc,Repo component
+    class PayPalSvc,EncSvc,Repo,Audit component
     class Controller api
     class DB db
     class PayPal external
@@ -57,13 +61,14 @@ classDiagram
     classDef model fill:#c8e6c9,stroke:#388e3c,stroke-width:1px
 
     class PaymentController:::controller {
-        +CreatePayment(PaymentRequest)
-        +ExecutePayment(paymentId, payerId)
+        +CreateOrder(PaymentRequest)
+        +SaveCard(SaveCardRequest)
+        +GetMyCards()
     }
 
     class PayPalService:::service {
-        +CreatePaymentAsync()
-        +ExecutePaymentAsync()
+        +CreateOrder(PaymentRequest)
+        -GetAccessToken()
     }
 
     class EncryptionService:::service {
@@ -71,17 +76,18 @@ classDiagram
         +Decrypt(string cipher)
     }
 
-    class PaymentModel:::model {
+    class CreditCardEntity:::model {
         +int Id
-        +string PayPalPaymentId
-        +decimal Amount
-        +string Status
+        +string UserId
+        +string EncryptedCardNumber
+        +string MaskedNumber
+        +string CardHolderName
         +DateTime CreatedAt
     }
 
     PaymentController --> PayPalService
     PaymentController --> EncryptionService
-    PayPalService --> PaymentModel : Crea/Actualiza
+    PaymentController ..> CreditCardEntity : Gestiona
 ```
 
 ## 🚀 Funcionalidades

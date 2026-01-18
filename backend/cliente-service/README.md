@@ -12,22 +12,26 @@ Muestra cómo los componentes internos del servicio interactúan entre sí y con
 ```mermaid
 graph TD
     %% Nodos externos
-    User[Frontend / API Gateway]
+    User[Frontend/Gateway]
     DB[(SQL Server: ClienteDB)]
     AuthService[Auth Service]
-
+    
     subgraph "Cliente Service Context"
         Controller[ClienteController]
         Service[ClienteService]
-        Repo[PetCareContext / EF Core]
+        Repo[PetCareContext]
         AuthClient[AuthHttpClient]
+        Audit[AuditService]
     end
 
     %% Relaciones
-    User -->|HTTP GET/POST| Controller
-    Controller -->|Llama a| Service
-    Service -->|Consulta/Persiste| Repo
-    Service -->|Enriquece Datos| AuthClient
+    User -->|CRUD Perfil| Controller
+    Controller -->|Lógica Negocio| Service
+    Service -->|Datos| Repo
+    Service -->|Auth Info| AuthClient
+    
+    Controller -- Audita --> Audit
+    Audit -- Persiste --> Repo
     
     Repo -->|SQL| DB
     AuthClient -->|"HTTP REST"| AuthService
@@ -43,7 +47,7 @@ graph TD
     classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
     classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5,color:#333
 
-    class Service,Repo,AuthClient component
+    class Service,Repo,AuthClient,Audit component
     class DB db
     class AuthService external
     class Controller api
@@ -61,39 +65,43 @@ classDiagram
     classDef model fill:#c8e6c9,stroke:#388e3c,stroke-width:1px
 
     class ClienteController:::controller {
-        +GetAllAsync()
-        +GetByIdAsync(Guid id)
-        +RegisterAsync(ClienteRequest request)
-        +VerificarDocumento(Guid id)
+        +GetMiPerfil()
+        +CrearPerfil(request)
+        +ActualizarPerfil(request)
+        +EliminarPerfil()
+        +GetAll()
+        +GetById(id)
+        +VerificarDocumento(id)
     }
 
     class ClienteService:::service {
-        -PetCareContext _context
-        -HttpClient _httpClient
-        +GetAllClientesAsync() : List~ClienteResponse~
-        +EnriquecerConDatosDelUsuarioAsync(List~ClienteResponse~)
-        +VerificarDocumentoAsync(Guid id)
+        +GetByUsuarioIdAsync()
+        +CreateAsync()
+        +UpdateAsync()
+        +VerifyDocumentoAsync()
+        +EnriquecerConDatosDelUsuarioAsync()
     }
 
     class Cliente:::model {
-        +Guid ClienteID
-        +String UsuarioID_Auth
-        +String DocumentoIdentidad
-        +Boolean DocumentoVerificado
-        +String Direccion
-        +String TelefonoEmergencia
+        +int ClienteID
+        +int UsuarioID
+        +string DocumentoIdentidad
+        +bool DocumentoVerificado
+        +string Direccion
+        +string TelefonoEmergencia
     }
 
     class ClienteResponse:::model {
-        +Guid ClienteID
-        +String NombreUsuario
-        +String EmailUsuario
-        +Boolean CuentaBloqueada
+        +int ClienteID
+        +string NombreUsuario
+        +string EmailUsuario
+        +string DocumentoIdentidad
+        +bool DocumentoVerificado
     }
 
     ClienteController --> ClienteService : Inyecta
-    ClienteService --> Cliente : Gestiona (Entity)
-    ClienteService ..> ClienteResponse : Retorna (DTO)
+    ClienteService --> Cliente : Gestiona
+    ClienteService ..> ClienteResponse : Retorna DTO Enriquecido
 ```
 
 ## 🚀 Funcionalidades Principales

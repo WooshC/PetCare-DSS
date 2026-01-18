@@ -9,25 +9,42 @@ El corazón operativo de la plataforma. Gestiona el ciclo de vida completo de un
 ```mermaid
 graph TD
     %% Nodos externos
-    User[Frontend]
+    User[Frontend/Gateway]
     DB[(SQL Server: RequestDB)]
-    RabbitMQ[Event Bus]
-
+    AuthSvc[Auth Service]
+    CuidadorSvc[Cuidador Service]
+    PaymentSvc[Payment Service]
+    
     subgraph "Request Service Context"
         SolCtrl[SolicitudController]
+        CliCtrl[SolicitudClienteController]
+        CuiCtrl[SolicitudCuidadorController]
         Service[SolicitudService]
         Repo[RequestDbContext]
         Mapper[AutoMapper]
+        Audit[AuditService]
     end
 
-    %% Relaciones
-    User -->|CRUD Solicitudes| SolCtrl
-    SolCtrl -->|Lógica Negocio| Service
+    %% Relaciones Entrantes
+    User -->|CRUD Admin| SolCtrl
+    User -->|Operaciones Cliente| CliCtrl
+    User -->|Operaciones Cuidador| CuiCtrl
+
+    %% Relaciones Internas
+    SolCtrl --> Service
+    CliCtrl --> Service
+    CuiCtrl --> Service
+    
     Service -->|Mapeo DTOs| Mapper
     Service -->|Persistencia| Repo
+    Service -->|Auditoría| Audit
+    
+    %% Relaciones Salientes
+    Service -->|Valida Usuario| AuthSvc
+    Service -->|Valida/Consulta Tarifas| CuidadorSvc
+    Service -->|Crea Orden Pago| PaymentSvc
     
     Repo -->|SQL| DB
-    Service -.->|Publica Eventos - Futuro| RabbitMQ
 
     %% Nota
     ServiceNote["📝 Estados de Solicitud:<br/>- Pendiente<br/>- Aceptada<br/>- En Progreso<br/>- Finalizada<br/>- Cancelada"]
@@ -40,10 +57,10 @@ graph TD
     classDef api fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100
     classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray:5 5,color:#333
 
-    class Service,Repo,Mapper component
-    class SolCtrl api
+    class Service,Repo,Mapper,Audit component
+    class SolCtrl,CliCtrl,CuiCtrl api
     class DB db
-    class RabbitMQ external
+    class AuthSvc,CuidadorSvc,PaymentSvc external
     class ServiceNote note
 ```
 
@@ -57,38 +74,50 @@ classDiagram
     classDef model fill:#c8e6c9,stroke:#388e3c,stroke-width:1px
 
     class SolicitudController:::controller {
-        +CrearSolicitud(dto)
-        +CambiarEstado(id, nuevoEstado)
-        +GetByCliente(clienteId)
+        +GetSolicitudes(filtros)
+        +GetSolicitudById(id)
+        +UpdateEstado(id, estado)
+    }
+
+    class SolicitudClienteController:::controller {
+        +CreateSolicitud(request)
+        +GetMisSolicitudes()
+        +CancelarSolicitud(id)
+        +PagarSolicitud(id)
+        +CalificarSolicitud(id)
+    }
+
+    class SolicitudCuidadorController:::controller {
+        +GetSolicitudesAsignadas()
+        +AceptarSolicitud(id)
+        +RechazarSolicitud(id)
+        +IniciarServicio(id)
+        +FinalizarServicio(id)
     }
 
     class SolicitudService:::service {
-        +CreateAsync()
-        +UpdateStatusAsync()
-        +ValidarDisponibilidad()
+        +CreateSolicitudAsync()
+        +UpdateSolicitudEstadoAsync()
+        +EnrichSolicitudWithUserInfo()
+        +CrearOrdenPagoAsync()
     }
 
     class Solicitud:::model {
-        +Guid Id
-        +Guid ClienteId
-        +Guid CuidadorId
-        +DateTime FechaInicio
-        +DateTime FechaFin
-        +EstadoSolicitud Estado
-        +EstadoPago EstadoPago
-    }
-
-    class EstadoSolicitud:::model {
-        <<Enumeration>>
-        Pendiente
-        Aceptada
-        Rechazada
-        Finalizada
+        +int SolicitudID
+        +int ClienteID
+        +int? CuidadorID
+        +string Estado
+        +string ModoPago
+        +bool IsPaid
+        +bool IsRated
+        +DateTime FechaHoraInicio
+        +int DuracionHoras
     }
 
     SolicitudController --> SolicitudService
+    SolicitudClienteController --> SolicitudService
+    SolicitudCuidadorController --> SolicitudService
     SolicitudService --> Solicitud : Gestiona
-    Solicitud --> EstadoSolicitud : Usa Enum
 ```
 
 ## 🚀 Funcionalidades

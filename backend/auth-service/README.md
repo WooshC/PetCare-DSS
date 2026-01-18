@@ -9,30 +9,35 @@ Es el guardián de la seguridad en PetCare. Gestiona el registro, inicio de sesi
 ```mermaid
 graph TD
     %% Nodos externos
-    User[Frontend]
+    User[Frontend/Gateway]
     DB[(SQL Server: AuthDB)]
     
     subgraph "Auth Service Context"
         AuthController[AuthController]
         AdminController[AdminController]
         AuthService[AuthService]
-        AdminService[UsuarioService]
+        AdminService[AdminService]
+        UserManager[UserManager Identity]
         Repo[AuthDbContext]
     end
 
     %% Relaciones
-    User -->|Login / Register| AuthController
-    User -->|Admin Dashboard| AdminController
+    User -->|Login/Register/Me| AuthController
+    User -->|Admin Ops| AdminController
     
-    AuthController -->|Valida credenciales| AuthService
-    AdminController -->|Gestiona Cuentas| AdminService
+    AuthController -->|Lógica Auth| AuthService
+    AuthController -->|Consultas| UserManager
     
-    AuthService --> Repo
-    AdminService --> Repo
+    AdminController -->|Gestión| AdminService
+    
+    AuthService --> UserManager
+    AdminService --> UserManager
+    
+    UserManager --> Repo
     Repo -->|SQL| DB
 
     %% Nota como nodo
-    ServiceNote["📝 Funciones Clave:<br/>- Emisión de JWT<br/>- Roles (Cliente, Cuidador, Admin)<br/>- Bloqueo/Desbloqueo de cuentas"]
+    ServiceNote["📝 Funciones Clave:<br/>- Identity Management<br/>- JWT Token Generation<br/>- Roles & Claims (Tenant)<br/>- Multi-tenancy Support"]
     AuthService -.->|Core| ServiceNote
 
     %% Estilos
@@ -42,7 +47,7 @@ graph TD
     classDef note fill:#fffde7,stroke:#f57f17,stroke-width:1px,stroke-dasharray: 5 5,color:#333
 
     class AuthController,AdminController api
-    class AuthService,AdminService,Repo component
+    class AuthService,AdminService,UserManager,Repo component
     class DB db
     class ServiceNote note
 ```
@@ -57,32 +62,53 @@ classDiagram
     classDef model fill:#c8e6c9,stroke:#388e3c,stroke-width:1px
 
     class AuthController:::controller {
-        +Login(LoginDto)
-        +Register(RegisterDto)
+        +Register(RegisterRequest)
+        +Login(LoginRequest)
+        +RequestPasswordReset(request)
+        +ConfirmPasswordReset(request)
+        +ChangePassword(request)
+        +GetUsers()
+        +GetUserById(id)
+        +GetCurrentUser()
     }
 
     class AdminController:::controller {
-        +GetUsers()
-        +LockUser(id)
-        +UnlockUser(id)
+        +RegistrarAdmin(request)
+        +RegistrarUsuario(request)
+        +ListarUsuarios()
+        +ObtenerDetallesUsuario(id)
+        +CambiarRol(id, request)
+        +EliminarUsuario(id)
+        +BloquearUsuario(id)
+        +DesbloquearUsuario(id)
     }
 
     class AuthService:::service {
-        +AuthenticateAsync()
-        +GenerateJwtToken()
+        +RegisterAsync()
+        +LoginAsync()
+        +RequestPasswordResetAsync()
+        +ConfirmPasswordResetAsync()
+        +ChangePasswordAsync()
     }
     
-    class Usuario:::model {
+    class AdminService:::service {
+        +RegistrarAdminAsync()
+        +RegistrarUsuarioPorAdminAsync()
+        +BloquearDesbloquearUsuarioAsync()
+    }
+
+    class User:::model {
         +String Id
-        +String UserName
+        +String Nombre
+        +String IdentificadorArrendador
         +Boolean CuentaBloqueada
-        +String PasswordHash
     }
 
     AuthController --> AuthService
-    AdminController --> AuthService
-    AuthService ..> Usuario
-```
+    AuthController --> User : Usa (via UserManager)
+    AdminController --> AdminService
+    AuthService ..> User
+    AdminService ..> User```
 
 ## 🚀 Funcionalidades
 - **Autenticación JWT**: Generación y validación de tokens seguros.
