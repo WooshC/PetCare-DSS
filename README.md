@@ -49,6 +49,9 @@ graph TD
     %% Frontend
     WebApp[💻 Web Application<br/>React + Vite]
 
+    %% Gateway
+    Gateway[🛡️ API Gateway<br/>Nginx]
+
     %% Microservicios
     subgraph "Backend Cluster (Docker)"
         Auth[🔐 Auth Service]
@@ -69,20 +72,24 @@ graph TD
         DB_Rating[(Rating DB)]
     end
 
-    %% Relaciones UI -> Services
-    WebApp -->|HTTPS/JSON| Auth
-    WebApp -->|HTTPS/JSON| Client
-    WebApp -->|HTTPS/JSON| Caregiver
-    WebApp -->|HTTPS/JSON| Request
-    WebApp -->|HTTPS/JSON| Payment
-    WebApp -->|HTTPS/JSON| Rating
+    %% Relaciones Externas
+    PayPal[💳 PayPal API]
 
-    %% Relaciones Internas
-    Client -.->|Valida Token| Auth
-    Caregiver -.->|Valida Token| Auth
-    Request -.->|Valida| Client
-    Request -.->|Valida| Caregiver
-    Payment -.->|Actualiza Estado| Request
+    %% Relaciones UI -> Gateway
+    WebApp -->|HTTPS/JSON| Gateway
+
+    %% Relaciones Gateway -> Services
+    Gateway -->|/api/auth| Auth
+    Gateway -->|/api/cliente| Client
+    Gateway -->|/api/cuidador| Caregiver
+    Gateway -->|/api/solicitud| Request
+    Gateway -->|/api/payment| Payment
+    Gateway -->|/api/ratings| Rating
+
+    %% Relaciones Internas (Service -> Service)
+    Request -.->|Obtiene Datos Usuario| Auth
+    Request -.->|Obtiene Datos/Tarifas| Caregiver
+    Request -->|Crea Orden Pago| Payment
 
     %% Relaciones DB
     Auth --> DB_Auth
@@ -92,14 +99,21 @@ graph TD
     Payment --> DB_Payment
     Rating --> DB_Rating
 
+    %% Relaciones con Externos
+    Payment -->|Procesa Pagos| PayPal
+
     %% Estilos
     classDef web fill:#0288d1,stroke:#01579b,stroke-width:2px,color:#fff
+    classDef gateway fill:#f57f17,stroke:#bf360c,stroke-width:2px,color:#fff
     classDef service fill:#009688,stroke:#004d40,stroke-width:2px,color:#fff
     classDef db fill:#558b2f,stroke:#33691e,stroke-width:2px,color:#fff
+    classDef external fill:#7b1fa2,stroke:#000,stroke-width:2px,color:#fff
 
     class WebApp web
+    class Gateway gateway
     class Auth,Client,Caregiver,Request,Payment,Rating service
     class DB_Auth,DB_Client,DB_Caregiver,DB_Request,DB_Payment,DB_Rating db
+    class PayPal external
 ```
 
 ## 📚 Documentación de Microservicios
