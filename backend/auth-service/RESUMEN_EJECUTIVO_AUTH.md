@@ -11,11 +11,11 @@
 ### Estado Actual
 ```
 ✅ Completado:    RF-01, RF-02, RF-03, RF-04, RF-05, RF-06, RF-08, RNF-01, HU-01, HU-02
-⏳ Pendiente:     RNF-02, RF-07
-🔴 No Aplica:    Otros servicios
+🔴 Descartado:    RNF-02, RF-07 (Alcance Prototipo/MVP)
+⚪ No Aplica:    Otros servicios
 
 Sprint Actual: 1 (Completado)
-Próximo Sprint: 2 (RF-07)
+Próximo Sprint: 2 (Refinamiento y Pruebas)
 ```
 
 ### Risk Reduction
@@ -48,10 +48,10 @@ Estado:        ✅ ACEPTABLE
 | **RF-04** | Req. Funcional | Mensajes de error genéricos (anti-enumeración de usuarios) | 2 | FIA_UAU.7 | ✅ Completado |
 | **RF-05** | Req. Funcional | Atributos de sesión en JWT (sub, role, tenant) | 3 | FIA_ATD.1, FIA_USB.1 | ✅ Completado |
 | **RF-06** | Req. Funcional | Hashing seguro de contraseñas con PBKDF2 | 5 | FCS_COP.1 | ✅ Completado |
-| **RF-07** | Req. Funcional | JWT de servicio para comunicación inter-microservicios | 5 | FDP_IFC.1, FDP_IFF.1 | ⏳ Pendiente |
+| **RF-07** | Req. Funcional | JWT de servicio para comunicación inter-microservicios | 5 | FDP_IFC.1, FDP_IFF.1 | 🔴 Descartado |
 | **RF-08** | Req. Funcional | Cifrado AES-256 de PAN + NUNCA almacenar CVV | 5 | FCS_COP.1 | ✅ Completado |
 | **RNF-01** | Req. No Funcional | TLS 1.2+ obligatorio en todas las comunicaciones | 3 | FDP_UCT.1 | ✅ Completado |
-| **RNF-02** | Req. No Funcional | Cifrado en reposo con SQL Server TDE y secretos en Vault | 8 | FDP_ITT.2, FDP_ITT.3 | ⏳ Pendiente |
+| **RNF-02** | Req. No Funcional | Cifrado en reposo con SQL Server TDE y secretos en Vault | 8 | FDP_ITT.2, FDP_ITT.3 | 🔴 Descartado |
 | **HU-01** | Historia de Usuario | Control de propiedad: Cliente/Cuidador solo acceden a sus recursos | 5 | FDP_ACC.1, FDP_ACF.1 | ✅ Completado |
 | **HU-02** | Historia de Usuario | Segregación por rol en solicitudes (Cliente, Cuidador, Admin) | 5 | FDP_ACC.1, FDP_ACF.1 | ✅ Completado |
 
@@ -227,16 +227,24 @@ Estado:        ✅ ACEPTABLE
 
 ---
 
-### RNF-02: Cifrado en Reposo + Key Vault ⏳ PENDIENTE (Producción)
+### RNF-02: Cifrado en Reposo + Key Vault 🔴 DESCARTADO (Prototipo)
 
 **Descripción**: Cifrado de datos sensibles + secretos en Azure Key Vault
 
+**Razón**:
+- Complejidad alta para fase de prototipo local/Docker.
+- Requiere infraestructura Azure Enterprise.
+- **Mitigación**: Uso de secretos en `appsettings.json` (aceptable para Dev) y Datos cifrados a nivel de aplicación (RF-08).
 
-**Complejidad**: 8 (Alta)  
-**Sprint**: Post-MVP (Producción)  
-**Common Criteria**: FDP_ITT.2, FDP_ITT.3
+---
 
-**Nota**: En desarrollo, secrets se almacenan en appsettings.json (aceptable)
+### RF-07: Comunicación Inter-Servicios (JWT) 🔴 DESCARTADO (Prototipo)
+
+**Descripción**: JWT firmado para comunicación S2S.
+
+**Razón**: 
+- Comunicación interna en red Docker aislada se considera segura para MVP.
+- **Mitigación**: Network isolation en `docker-compose`.
 
 ---
 
@@ -408,7 +416,8 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 ## 🚀 ROADMAP - PRÓXIMOS PASOS
 
 ### Sprint 2 (Semanas 2-3): Secure Inter-Service Communication
-- [ ] Implementar RF-07 (Service JWT)
+- [ ] Refinamiento de HU-01 y HU-02
+- [ ] Pruebas de integración
 
 ### Sprint 3 (Semanas 4-5): Enhanced Security
 - [ ] Validar RF-04 en todos los endpoints
@@ -423,8 +432,6 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 - [ ] Backup codes
 
 ### Sprint 5+: Production Hardening
-- [ ] RNF-02: Key Vault integration
-- [ ] TDE en SQL Server
 - [ ] Rate limiting global
 - [ ] API Gateway patterns
 
@@ -458,7 +465,8 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 ✅ RF-08: 100% implementado (Payment)
 ✅ HU-01: 100% implementado
 ✅ HU-02: 100% implementado
-⏳ RF-07: 0% (próximo)
+🔴 RF-07: Descartado (Fuera de alcance)
+🔴 RNF-02: Descartado (Fuera de alcance)
 ⏳ HU-03: 15% (preparado)
 ```
 
@@ -527,13 +535,13 @@ CREATE INDEX IX_AspNetUsers_FechaBloqueo ON AspNetUsers(FechaBloqueo);
 - Bootstrap de primer admin
 - JWT con validación de tenant
 
-**Pendiente antes de producción:**
+**Futuras mejoras (Post-Diploma):**
 - RF-07: Seguridad de comunicación inter-servicios
-- RNF-02: Key Vault integration (Post-MVP)
+- RNF-02: Key Vault integration
 - Unit tests automatizados
 
 **Riesgo actual**: 🟢 BAJO (1.5/10)  
-**Estado**: ✅ ACEPTABLE PARA STAGING
+**Estado**: ✅ COMPLETADO PARA DEFENSA DE TESIS
 
 ---
 
