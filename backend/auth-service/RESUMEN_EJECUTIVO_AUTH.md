@@ -55,10 +55,10 @@ Estado:        ✅ ACEPTABLE
 
 | ID | Descripción | Criterio Common Criteria | Estado | Vector OWASP (Mitigado/Residual) |
 |:---:|:---|:---:|:---:|:---:|
-| **RF-01** | Autenticación JWT universal | FIA_UID.2, FIA_UAU.2 | ✅ Completado | `https://beaglesecurity.com/owasp-risk-calculator?vector=(SL:3/M:1/O:4/S:2/ED:3/EE:3/A:1/ID:3/LC:2/LI:2/LAV:1/LAC:6/FD:2/RD:1/NC:2/PV:3)` |
-| **RF-02** | Bloqueo c/intentos fallidos | FIA_AFL.1 | ✅ Completado | `https://beaglesecurity.com/owasp-risk-calculator?vector=(SL:2/M:3/O:1/S:0/ED:3/EE:4/A:2/ID:0/LC:1/LI:1/LAV:2/LAC:1/FD:1/RD:1/NC:1/PV:1)` |
-| **RF-03** | Password Policy | FIA_SOS.1 | ✅ Completado | `https://beaglesecurity.com/owasp-risk-calculator?vector=(SL:2/M:3/O:2/S:3/ED:3/EE:3/A:2/ID:3/LC:2/LI:2/LAV:1/LAC:2/FD:1/RD:2/NC:1/PV:3)` |
-| **RF-04** | Anti-enumeración | FIA_UAU.7 | ✅ Completado | `SL:1/M:1/O:0/S:1/ED:1/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:1/PV:1` |
+| **RF-01** | Autenticación JWT universal | FIA_UID.2, FIA_UAU.2 | ✅ Completado|`(SL:3/M:1/O:4/S:2/ED:3/EE:3/A:1/ID:3/LC:2/LI:2/LAV:1/LAC:6/FD:2/RD:1/NC:2/PV:3)`|
+| **RF-02** | Bloqueo c/intentos fallidos | FIA_AFL.1 | ✅ Completado | `(SL:2/M:3/O:1/S:0/ED:3/EE:4/A:2/ID:0/LC:1/LI:1/LAV:2/LAC:1/FD:1/RD:1/NC:1/PV:1)` |
+| **RF-03** | Password Policy | FIA_SOS.1 | ✅ Completado | `(SL:2/M:3/O:2/S:3/ED:3/EE:3/A:2/ID:3/LC:2/LI:2/LAV:1/LAC:2/FD:1/RD:2/NC:1/PV:3)` |
+| **RF-04** | Anti-enumeración | FIA_UAU.7 | ✅ Completado | `SL:2/M:2/O:1/S:2/ED:3/EE:3/A:2/ID:3/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:1/PV:1 |
 | **RF-05** | Claims de Sesión (JWT) | FIA_ATD.1 | ✅ Completado | `SL:1/M:1/O:1/S:1/ED:1/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:1/PV:1` |
 | **RF-06** | Hashing Seguro (PBKDF2) | FCS_COP.1 | ✅ Completado | `SL:0/M:1/O:0/S:8/ED:1/EE:0/A:0/ID:2/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:0/PV:1` |
 | **RF-08** | Cifrado AES-256 (Payment) | FCS_COP.1 | ✅ Completado | `SL:1/M:1/O:1/S:9/ED:2/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:0/PV:1` |
