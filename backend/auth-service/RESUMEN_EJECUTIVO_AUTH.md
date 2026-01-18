@@ -1,8 +1,8 @@
-# 📊 RESUMEN EJECUTIVO - PetCare AUTH Service
+# 📊 RESUMEN EJECUTIVO FINAL - PetCare AUTH Service
 
-**Fecha**: 11 de Enero 2026  
-**Versión**: 2.0  
-**Estado General**: 🟢 **PRODUCCIÓN-READY** (excepto algunos RF para Producción)  
+**Fecha**: 18 de Enero 2026  
+**Versión**: 3.0 (Definitiva)  
+**Estado General**: 🟢 **IMPLEMENTACIÓN COMPLETA Y OPERATIVA (Alcance Tesis)**  
 
 ---
 
@@ -34,26 +34,40 @@ Ratio:         250:1
 Estado:        ✅ ACEPTABLE
 ```
 
+### 🔍 Comparación Global – Antes vs Después
+
+| Aspecto | Antes | Después |
+|--------|-------|---------|
+| **Autenticación** | Básica o inexistente | ✅ JWT centralizado |
+| **Protección fuerza bruta** | No existía | ✅ Bloqueo automático (RF-02) |
+| **Enumeración de usuarios** | Posible | ✅ Mitigada (Mensajes genéricos) |
+| **Contraseñas** | Débiles | ✅ PBKDF2 + Políticas Fuertes |
+| **Control de acceso** | No definido | ✅ RBAC + Propiedad (HU-01/02) |
+| **Comunicación interna** | Sin autenticación | 🔴 Network Isolation (RF-07 Descartado) |
+| **Protección de datos** | Datos expuestos | ✅ AES-256 (Payment) / 🔴 AppSettings (Vault Descartado) |
+| **Transporte** | HTTP | ✅ TLS 1.2+ (RNF-01) |
+| **Riesgo OWASP A07** | 🔴 Alto (8.9) | 🟢 Bajo (1.5) |
+
 ---
 
 ## 📋 REQUISITOS DE AUTH - LISTADO MAESTRO
 
-### 📊 Tabla de Requisitos y Cumplimiento
+### 📊 Tabla de Requisitos y Cumplimiento con Vectores OWASP
 
-| ID | Tipo | Descripción | Prioridad | Criterio Common Criteria | Estado |
-|:---:|:---:|:---|:---:|:---|:---:|
-| **RF-01** | Req. Funcional | Autenticación JWT universal en todos los servicios | 5 | FIA_UID.2, FIA_UAU.2 | ✅ Completado |
-| **RF-02** | Req. Funcional | Bloqueo de cuenta tras intentos fallidos de login | 5 | FIA_AFL.1 | ✅ Completado |
-| **RF-03** | Req. Funcional | Política de contraseñas fuertes (mínimo 8 caracteres, alfanumérico) | 3 | FIA_SOS.1 | ✅ Completado |
-| **RF-04** | Req. Funcional | Mensajes de error genéricos (anti-enumeración de usuarios) | 2 | FIA_UAU.7 | ✅ Completado |
-| **RF-05** | Req. Funcional | Atributos de sesión en JWT (sub, role, tenant) | 3 | FIA_ATD.1, FIA_USB.1 | ✅ Completado |
-| **RF-06** | Req. Funcional | Hashing seguro de contraseñas con PBKDF2 | 5 | FCS_COP.1 | ✅ Completado |
-| **RF-07** | Req. Funcional | JWT de servicio para comunicación inter-microservicios | 5 | FDP_IFC.1, FDP_IFF.1 | 🔴 Descartado |
-| **RF-08** | Req. Funcional | Cifrado AES-256 de PAN + NUNCA almacenar CVV | 5 | FCS_COP.1 | ✅ Completado |
-| **RNF-01** | Req. No Funcional | TLS 1.2+ obligatorio en todas las comunicaciones | 3 | FDP_UCT.1 | ✅ Completado |
-| **RNF-02** | Req. No Funcional | Cifrado en reposo con SQL Server TDE y secretos en Vault | 8 | FDP_ITT.2, FDP_ITT.3 | 🔴 Descartado |
-| **HU-01** | Historia de Usuario | Control de propiedad: Cliente/Cuidador solo acceden a sus recursos | 5 | FDP_ACC.1, FDP_ACF.1 | ✅ Completado |
-| **HU-02** | Historia de Usuario | Segregación por rol en solicitudes (Cliente, Cuidador, Admin) | 5 | FDP_ACC.1, FDP_ACF.1 | ✅ Completado |
+| ID | Descripción | Criterio Common Criteria | Estado | Vector OWASP (Mitigado/Residual) |
+|:---:|:---|:---:|:---:|:---:|
+| **RF-01** | Autenticación JWT universal | FIA_UID.2, FIA_UAU.2 | ✅ Completado | `SL:1/M:1/O:0/S:2/ED:1/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:1/PV:1` |
+| **RF-02** | Bloqueo c/intentos fallidos | FIA_AFL.1 | ✅ Completado | `SL:3/M:2/O:1/S:0/ED:3/EE:3/A:1/ID:1/LC:1/LI:1/LAV:3/LAC:1/FD:1/RD:1/NC:1/PV:1` |
+| **RF-03** | Password Policy | FIA_SOS.1 | ✅ Completado | `SL:3/M:1/O:1/S:1/ED:1/EE:1/A:1/ID:1/LC:3/LI:1/LAV:3/LAC:1/FD:2/RD:1/NC:2/PV:1` |
+| **RF-04** | Anti-enumeración | FIA_UAU.7 | ✅ Completado | `SL:1/M:1/O:0/S:1/ED:1/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:1/PV:1` |
+| **RF-05** | Claims de Sesión (JWT) | FIA_ATD.1 | ✅ Completado | `SL:1/M:1/O:1/S:1/ED:1/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:1/PV:1` |
+| **RF-06** | Hashing Seguro (PBKDF2) | FCS_COP.1 | ✅ Completado | `SL:0/M:1/O:0/S:8/ED:1/EE:0/A:0/ID:2/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:0/PV:1` |
+| **RF-07** | JWT Inter-Servicios | FDP_IFC.1 | 🔴 Descartado | `SL:5/M:3/O:2/S:2/ED:2/EE:1/A:1/ID:2/LC:2/LI:1/LAV:1/LAC:1/FD:2/RD:2/NC:2/PV:2` (Residual) |
+| **RF-08** | Cifrado AES-256 (Payment) | FCS_COP.1 | ✅ Completado | `SL:1/M:1/O:1/S:9/ED:2/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:0/PV:1` |
+| **RNF-01** | TLS 1.2+ | FDP_UCT.1 | ✅ Completado | `SL:1/M:1/O:0/S:1/ED:1/EE:1/A:1/ID:1/LC:1/LI:1/LAV:1/LAC:1/FD:1/RD:1/NC:1/PV:1` |
+| **RNF-02** | Cifrado en Reposo | FDP_ITT.2 | 🔴 Descartado | `SL:4/M:4/O:3/S:3/ED:2/EE:2/A:2/ID:2/LC:2/LI:2/LAV:2/LAC:2/FD:2/RD:2/NC:2/PV:2` (Residual) |
+| **HU-01** | Control Propiedad | FDP_ACC.1 | ✅ Completado | `SL:2/M:2/O:1/S:2/ED:2/EE:1/A:2/ID:2/LC:2/LI:1/LAV:3/LAC:2/FD:2/RD:2/NC:2/PV:1` |
+| **HU-02** | Segregación Roles | FDP_ACC.1 | ✅ Completado | `SL:2/M:2/O:1/S:2/ED:2/EE:1/A:2/ID:2/LC:2/LI:1/LAV:3/LAC:2/FD:2/RD:2/NC:2/PV:1` |
 
 ---
 
