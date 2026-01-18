@@ -105,10 +105,11 @@ classDiagram
     }
 
     AuthController --> AuthService
-    AuthController --> User : Usa (via UserManager)
+    AuthController --> User : Usa UserManager
     AdminController --> AdminService
     AuthService ..> User
-    AdminService ..> User```
+    AdminService ..> User
+```
 
 ## 🚀 Funcionalidades
 - **Autenticación JWT**: Generación y validación de tokens seguros.
