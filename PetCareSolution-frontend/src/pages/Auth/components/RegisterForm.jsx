@@ -18,7 +18,7 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres'),
   email: z.string().email('Email inválido'),
   phoneNumber: z.string().min(10, 'Mínimo 10 caracteres').max(15, 'Máximo 15 caracteres'),
-  password: z.string().min(8, 'Mínimo 8 caracteres').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Mayúsculas, minúsculas y números'),
+  password: z.string().min(8, 'Mínimo 8 caracteres').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])/, 'Debe incluir mayúscula, minúscula, número y símbolo'),
   confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
   role: z.enum(['Cliente', 'Cuidador'], { required_error: 'Selecciona un perfil' }),
   documentoIdentidad: z.string().min(1, 'Requerido'),
@@ -156,6 +156,16 @@ const RegisterForm = () => {
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-[2.4rem] text-slate-400 hover:text-slate-600">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
+                <div className="mt-2 text-[10px] text-slate-400 ml-2">
+                  <p className="font-bold mb-1">Tu contraseña debe incluir:</p>
+                  <ul className="list-disc list-inside space-y-0.5 pl-1">
+                    <li>Mínimo 8 caracteres</li>
+                    <li>Al menos una mayúscula</li>
+                    <li>Al menos una minúscula</li>
+                    <li>Al menos un número</li>
+                    <li>Al menos un símbolo (ej. @, #, !)</li>
+                  </ul>
+                </div>
               </div>
               <Input label="Repetir Contraseña" type="password" {...register('confirmPassword')} error={errors.confirmPassword?.message} placeholder="••••••••" icon={<Lock className="w-4 h-4 text-slate-400" />} className="rounded-2xl bg-slate-50" />
             </div>

@@ -74,8 +74,8 @@ const CuidadorHeader = ({
         {/* Primera fila: Logo y usuario */}
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-brand-500 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/20 transform hover:rotate-12 transition-transform duration-300">
-              <PawPrint className="text-white w-6 h-6" />
+            <div className="w-12 h-12 flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
+              <img src="/petcare-logo.png" alt="PetCare Logo" className="w-full h-full object-contain filter drop-shadow-md" />
             </div>
             <div className="flex flex-col">
               <h1 className="text-xl font-black text-white tracking-tight">
@@ -136,8 +136,8 @@ const CuidadorHeader = ({
                 key={section.key}
                 onClick={() => onSectionChange(section.key)}
                 className={`group relative flex items-center py-3 px-4 font-medium text-sm whitespace-nowrap transition-all duration-300 rounded-lg mx-1 min-w-max ${currentSection === section.key
-                    ? 'text-white bg-white/5 shadow-inner'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'text-white bg-white/5 shadow-inner'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 title={section.description}
               >
@@ -150,8 +150,8 @@ const CuidadorHeader = ({
                   {section.badge > 0 && (
                     <span
                       className={`relative ${section.key === 'solicitudes'
-                          ? 'bg-brand-500'
-                          : 'bg-emerald-500'
+                        ? 'bg-brand-500'
+                        : 'bg-emerald-500'
                         } text-white text-[10px] font-black rounded-full h-5 w-5 flex items-center justify-center shadow-lg min-w-[1.25rem]`}
                     >
                       {section.badge}

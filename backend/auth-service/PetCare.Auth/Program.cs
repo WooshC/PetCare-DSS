@@ -48,8 +48,9 @@ builder.Services.AddIdentity<User, UserRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
-    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireNonAlphanumeric = true; // Requiere carácter especial (símbolo)
     options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<AuthDbContext>()
