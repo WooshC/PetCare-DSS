@@ -1,8 +1,8 @@
-# 🐾 Servicio de Cuidadores (Cuidador Service)
+# Servicio de Cuidadores (Cuidador Service)
 
 Este microservicio gestiona la información de los **Cuidadores** (Caregivers) en la plataforma PetCare. Es el núcleo de la oferta de servicios, manejando perfiles profesionales, tarifas, especialidades y la reputación de los cuidadores.
 
-## 🏗️ Arquitectura C4
+## Arquitectura C4
 
 A continuación se presentan los diagramas de arquitectura para entender la estructura interna del servicio.
 
@@ -39,7 +39,7 @@ graph TD
     ApiClients -.->|HTTP| RatingService
 
     %% Nota como nodo
-    ServiceNote["📝 Responsabilidades:<br/>- Perfiles de cuidadores<br/>- Gestión de Tarifas<br/>- Disponibilidad<br/>- Cálculo de Reputation"]
+    ServiceNote["Responsabilidades:<br/>- Perfiles de cuidadores<br/>- Gestión de Tarifas<br/>- Disponibilidad<br/>- Cálculo de Reputation"]
     Service -.->|Implementa| ServiceNote
 
     %% Estilos
@@ -112,14 +112,14 @@ classDiagram
     CuidadorService ..> CuidadorResponse : Retorna DTO Enriquecido
 ```
 
-## 🚀 Funcionalidades Principales
+## Funcionalidades Principales
 
 1.  **Perfil Profesional**: Gestión de biografía, especialidades (perros, gatos, cuidados especiales) y experiencia.
 2.  **Tarifas y Servicios**: Configuración del costo por hora de servicio.
 3.  **Estado y Verificación**: Control de validación de documentos y estado de la cuenta (activa/bloqueada).
 4.  **Agregación de Información**: Combina datos de `Auth` (identidad) y `Rating` (reputación) para presentar un perfil completo al cliente final.
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 - **Framework**: .NET 8 (ASP.NET Core Web API)
 - **Base de Datos**: SQL Server
@@ -127,6 +127,6 @@ classDiagram
 - **Comunicación**: REST, HttpClient
 - **Estrategia de Carga**: `Task.WhenAll` para carga paralela eficiente de datos externos (Auth/Rating).
 
-## 📝 Notas de Desarrollo
+## Notas de Desarrollo
 
 - Este servicio actúa como un "agregador" de información para mostrar las tarjetas de cuidadores en el frontend, orquestando llamadas a múltiples fuentes de datos.

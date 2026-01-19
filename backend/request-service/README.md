@@ -1,8 +1,8 @@
-# 📅 Servicio de Solicitudes (Request Service)
+# Servicio de Solicitudes (Request Service)
 
 El corazón operativo de la plataforma. Gestiona el ciclo de vida completo de una solicitud de cuidado, desde que el cliente la crea, el cuidador la acepta/rechaza, hasta que se marca como completada y pagada.
 
-## 🏗️ Arquitectura C4
+## Arquitectura C4
 
 ### Nivel 3: Diagrama de Componentes
 
@@ -47,7 +47,7 @@ graph TD
     Repo -->|SQL| DB
 
     %% Nota
-    ServiceNote["📝 Estados de Solicitud:<br/>- Pendiente<br/>- Aceptada<br/>- En Progreso<br/>- Finalizada<br/>- Cancelada"]
+    ServiceNote["Estados de Solicitud:<br/>- Pendiente<br/>- Aceptada<br/>- En Progreso<br/>- Finalizada<br/>- Cancelada"]
     Service -.->|Gestiona| ServiceNote
 
     %% Estilos
@@ -120,12 +120,12 @@ classDiagram
     SolicitudService --> Solicitud : Gestiona
 ```
 
-## 🚀 Funcionalidades
+## Funcionalidades
 - **Gestión de Citas**: Creación, edición y cancelación de solicitudes de servicio.
 - **Flujo de Estados**: Máquina de estados robusta para transiciones válidas (ej. no se puede pagar una solicitud rechazada).
 - **Seguimiento de Pagos**: Registra si una solicitud ha sido pagada (conectando lógicamente con Payment Service).
 
-## 🛠️ Tecnologías
+## Tecnologías
 - **Framework**: .NET 8
 - **Base de Datos**: SQL Server
 - **Mapeo**: AutoMapper

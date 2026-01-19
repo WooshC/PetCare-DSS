@@ -1,8 +1,8 @@
-# 🔐 Servicio de Autenticación (Auth Service)
+# Servicio de Autenticación (Auth Service)
 
 Es el guardián de la seguridad en PetCare. Gestiona el registro, inicio de sesión (JWT) y la administración de usuarios y roles. También expone endpoints para que otros servicios validen identidades y obtengan información de usuarios.
 
-## 🏗️ Arquitectura C4
+## Arquitectura C4
 
 ### Nivel 3: Diagrama de Componentes
 
@@ -37,7 +37,7 @@ graph TD
     Repo -->|SQL| DB
 
     %% Nota como nodo
-    ServiceNote["📝 Funciones Clave:<br/>- Identity Management<br/>- JWT Token Generation<br/>- Roles & Claims (Tenant)<br/>- Multi-tenancy Support"]
+    ServiceNote["Funciones Clave:<br/>- Identity Management<br/>- JWT Token Generation<br/>- Roles & Claims (Tenant)<br/>- Multi-tenancy Support"]
     AuthService -.->|Core| ServiceNote
 
     %% Estilos
@@ -111,13 +111,13 @@ classDiagram
     AdminService ..> User
 ```
 
-## 🚀 Funcionalidades
+## Funcionalidades
 - **Autenticación JWT**: Generación y validación de tokens seguros.
 - **Gestión de Roles**: Soporte para roles de Administrador, Cliente y Cuidador.
 - **Administración**: Endpoints para ver lista de usuarios y gestionar bloqueos de acceso.
 - **Integración entre Servicios**: Provee datos de usuario (email, teléfono, bloqueo) a `Cliente-Service` y `Cuidador-Service`.
 
-## 🛠️ Tecnologías
+## Tecnologías
 - **Framework**: .NET 8 (ASP.NET Core Identity)
 - **Base de Datos**: SQL Server
 - **Seguridad**: JWT Bearer Authentication

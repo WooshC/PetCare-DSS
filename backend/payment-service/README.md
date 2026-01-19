@@ -1,8 +1,8 @@
-# 💳 Servicio de Pagos (Payment Service)
+# Servicio de Pagos (Payment Service)
 
 Gestiona las transacciones financieras dentro de la plataforma, integrándose con pasarelas de pago externas (simulado vía PayPal Sandbox) y manteniendo un registro seguro y auditable de los pagos.
 
-## 🏗️ Arquitectura C4
+## Arquitectura C4
 
 ### Nivel 3: Diagrama de Componentes
 
@@ -34,7 +34,7 @@ graph TD
     Repo -->|SQL| DB
 
     %% Nota
-    ServiceNote["📝 Seguridad:<br/>- Encriptación AES-256 para datos sensibles<br/>- Integración con PayPal Sandbox"]
+    ServiceNote["Seguridad:<br/>- Encriptación AES-256 para datos sensibles<br/>- Integración con PayPal Sandbox"]
     EncSvc -.->|Provee| ServiceNote
 
     %% Estilos
@@ -90,13 +90,13 @@ classDiagram
     PaymentController ..> CreditCardEntity : Gestiona
 ```
 
-## 🚀 Funcionalidades
+## Funcionalidades
 - **Creación de Pagos**: Genera enlaces de pago redireccionando a PayPal.
 - **Ejecución de Pagos**: Finaliza la transacción una vez aprobada por el usuario.
 - **Seguridad**: Los detalles sensibles se almacenan encriptados en la base de datos.
 - **Auditoría**: Historial completo de transacciones.
 
-## 🛠️ Tecnologías
+## Tecnologías
 - **Framework**: .NET 8
 - **Base de Datos**: SQL Server
 - **Pasarela**: PayPal SDK / REST API

@@ -1,10 +1,10 @@
 # PetCare Request Service
 
-## 📋 Descripción
+## Descripción
 
 El **PetCare Request Service** es un microservicio encargado de gestionar las solicitudes de servicios de cuidado de mascotas. Este servicio permite a los clientes crear solicitudes de servicios, a los cuidadores aceptar o rechazar solicitudes, y a los administradores gestionar el flujo completo de las solicitudes.
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ### Tecnologías Utilizadas
 - **.NET 8.0** - Framework de desarrollo
@@ -44,7 +44,7 @@ PetCare.Request/
 └── PetCare.Request.csproj              # Archivo de proyecto
 ```
 
-## 🚀 Instalación y Configuración
+## Instalación y Configuración
 
 ### Prerrequisitos
 - .NET 8.0 SDK
@@ -90,7 +90,7 @@ PetCare.Request/
    docker run -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Docker petcare-request
    ```
 
-## 📊 Base de Datos
+## Base de Datos
 
 ### Tabla: Solicitudes
 
@@ -121,7 +121,7 @@ PetCare.Request/
 - **Rechazada**: Cuidador rechazó la solicitud
 - **Fuera de Tiempo**: Solicitud expirada
 
-## 🔐 Autenticación y Autorización
+## Autenticación y Autorización
 
 El servicio utiliza JWT (JSON Web Tokens) para autenticación. Los roles soportados son:
 
@@ -135,14 +135,14 @@ Authorization: Bearer <jwt_token>
 Content-Type: application/json
 ```
 
-## 📡 API Endpoints
+## API Endpoints
 
-### 🏠 Endpoints Generales
+### Endpoints Generales
 - `GET /api/solicitud/test` - Verificar estado del servicio
 - `GET /api/solicitud/debug-token` - Debug información del token JWT
 - `GET /api/solicitud/debug-cuidador/{id}` - Debug validación de cuidador (con autenticación)
 
-### 👤 Endpoints de Cliente (`/api/solicitudcliente`)
+### Endpoints de Cliente (`/api/solicitudcliente`)
 - `GET /api/solicitudcliente/mis-solicitudes` - Ver mis solicitudes
 - `GET /api/solicitudcliente/{id}` - Ver solicitud específica
 - `POST /api/solicitudcliente` - Crear nueva solicitud
@@ -151,7 +151,7 @@ Content-Type: application/json
 - `POST /api/solicitudcliente/{id}/cancelar` - Cancelar solicitud
 - `DELETE /api/solicitudcliente/{id}` - Eliminar solicitud
 
-### 🐕 Endpoints de Cuidador (`/api/solicitudcuidador`)
+### Endpoints de Cuidador (`/api/solicitudcuidador`)
 - `GET /api/solicitudcuidador/mis-solicitudes` - Ver mis solicitudes asignadas
 - `GET /api/solicitudcuidador/{id}` - Ver solicitud específica
 - `POST /api/solicitudcuidador/{id}/aceptar` - Aceptar solicitud
@@ -159,7 +159,7 @@ Content-Type: application/json
 - `POST /api/solicitudcuidador/{id}/iniciar-servicio` - Iniciar servicio
 - `POST /api/solicitudcuidador/{id}/finalizar-servicio` - Finalizar servicio
 
-### 🔧 Endpoints de Administrador (`/api/solicitud`)
+### Endpoints de Administrador (`/api/solicitud`)
 - `GET /api/solicitud` - Ver todas las solicitudes
 - `GET /api/solicitud/{id}` - Ver solicitud específica
 - `GET /api/solicitud/cliente/{clienteId}` - Ver solicitudes de cliente
@@ -169,7 +169,7 @@ Content-Type: application/json
 - `PUT /api/solicitud/{id}/estado` - Cambiar estado manualmente
 - `POST /api/solicitud/{id}/cancelar` - Cancelar solicitud (admin)
 
-## 🔄 Flujo Completo del Sistema
+## Flujo Completo del Sistema
 
 ### 1. Creación de Solicitud
 1. **Cliente crea solicitud** → `POST /api/solicitudcliente`
@@ -205,7 +205,7 @@ Content-Type: application/json
 - **Admin puede asignar cuidador** → `PUT /api/solicitud/{id}/asignar-cuidador`
 - **Admin puede cambiar estado** → `PUT /api/solicitud/{id}/estado`
 
-## 📝 Ejemplos de Uso
+## Ejemplos de Uso
 
 ### Crear una Solicitud
 ```http
@@ -272,7 +272,7 @@ POST /api/solicitudcuidador/1/aceptar
 Authorization: Bearer <cuidador_token>
 ```
 
-## 🔧 Configuración
+## Configuración
 
 ### Variables de Entorno
 - `ASPNETCORE_ENVIRONMENT`: Entorno de ejecución (Development/Docker)
@@ -290,7 +290,7 @@ Authorization: Bearer <cuidador_token>
 - **Desarrollo**: 5128 (HTTP), 7254 (HTTPS)
 - **Docker**: 8080
 
-## 🧪 Testing
+## Testing
 
 ### Ejecutar Tests
 ```bash
@@ -303,7 +303,7 @@ Utiliza el archivo `PetCare.Request.http` para probar los endpoints con REST Cli
 ### Swagger UI
 Accede a la documentación interactiva en: `http://localhost:5128/swagger`
 
-## 🐳 Docker
+## Docker
 
 ### Construir Imagen
 ```bash
@@ -322,23 +322,23 @@ docker run -d \
 ### Docker Compose
 El servicio está incluido en el `docker-compose.yml` principal del proyecto.
 
-## 📈 Monitoreo y Logs
+## Monitoreo y Logs
 
 ### Logs de Aplicación
 Los logs se escriben en la consola con diferentes niveles:
-- 🔧 Configuración
-- 🔄 Migraciones
-- 📊 Base de datos
-- 🚀 Inicio de aplicación
-- ⚠️ Advertencias
-- ❌ Errores
+- Configuración
+- Migraciones
+- Base de datos
+- Inicio de aplicación
+- Advertencias
+- Errores
 
 ### Métricas
 - Tiempo de respuesta de endpoints
 - Número de solicitudes por estado
 - Errores de autenticación/autorización
 
-## 🔒 Seguridad
+## Seguridad
 
 ### Validaciones
 - Autenticación JWT obligatoria
@@ -359,7 +359,7 @@ Los logs se escriben en la consola con diferentes niveles:
 - Logs de auditoría
 - Manejo seguro de errores
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Problemas Comunes
 
@@ -391,7 +391,7 @@ Para habilitar logs detallados, modifica `appsettings.json`:
 }
 ```
 
-## 🤝 Contribución
+## Contribución
 
 1. Fork el proyecto
 2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
@@ -399,11 +399,11 @@ Para habilitar logs detallados, modifica `appsettings.json`:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
-## 📞 Soporte
+## Soporte
 
 Para soporte técnico o preguntas:
 - Crear un issue en el repositorio
@@ -412,4 +412,4 @@ Para soporte técnico o preguntas:
 
 ---
 
-**PetCare Request Service** - Gestionando solicitudes de cuidado de mascotas de manera eficiente y segura. 🐾 
+**PetCare Request Service** - Gestionando solicitudes de cuidado de mascotas de manera eficiente y segura.
